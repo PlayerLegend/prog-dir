@@ -26,9 +26,20 @@ typedef struct {
 
 typedef dictionary(option_entry) option_db;
 
+typedef struct {
+    const char * path;
+    int argc;
+    char ** argv;
+    char opt_flag;
+    const char * opt_long;
+}
+    config_location;
+
+char * find_config(const config_location * find);
+
 void options_init(option_db * db);
 
-char ** set_option_str(option_db * db, const char * name);
+char ** set_option_string(option_db * db, const char * name);
 float * set_option_float(option_db * db, const char * name);
 bool * set_option_bool(option_db * db, const char * name);
 

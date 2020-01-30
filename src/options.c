@@ -13,9 +13,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <getopt.h>
 
 #include "hash_table_string.h"
 #include "print.h"
+#include "print_array.h"
 
 void options_init(option_db * db)
 {
@@ -35,7 +38,7 @@ static void set_state(option_entry * entry, enum option_state new_state)
     entry->state = new_state;
 }
 
-char ** set_option_str(option_db * db, const char * name)
+char ** set_option_string(option_db * db, const char * name)
 {
     option_entry * entry = dictionary_access_key(db,name);
     set_state(entry,OPTION_STRING);
@@ -180,4 +183,115 @@ int load_options_file(option_db * db, FILE * file)
 
     free(line.text);
     return 0;
+}
+
+static int get_rel_xdg(char_array * output, const char * path)
+{
+    char * rel = getenv("XDG_CONFIG_HOME");
+    if(rel)
+    {
+	print_array_write(output,"%s/%s",rel,path);
+	return 0;
+    }
+
+    rel = getenv("HOME");
+
+    if(rel)
+    {
+	print_array_write(output,"%s/.config/%s",rel,path);
+	return 0;
+    }
+
+    print_error("Unable to look up HOME or XDG_CONFIG_HOME environment variables");
+    return -1;
+}
+
+static int get_rel_home(char_array * output, const char * path)
+{
+    char * rel = getenv("HOME");
+
+    if(rel)
+    {
+	print_array_write(output,"%s/.%s",rel,path);
+	return 0;
+    }
+
+    print_error("Unable to look up HOME environment variable");
+    return -1;
+}
+
+static int get_rel_etc(char_array * output, const char * path)
+{
+    print_array_write(output,"/etc/%s",path);
+}
+
+static int find_file(char_array * output, const char * path)
+{
+    int (*get_rel[])(char_array * output, const char * path) =
+    {
+	get_rel_xdg,
+	get_rel_home,
+	get_rel_etc,
+	NULL,
+    };
+
+    int (**i)(char_array * output, const char * path);
+
+    for(i = get_rel; NULL != *i; i++)
+    {
+	if( -1 == (*i)(output,path) )
+	    return -1;
+
+	if( 0 == access(path,R_OK) )
+	    return 0;
+    }
+
+    
+
+    return -1;
+}
+
+char * find_config(const config_location * find)
+{
+    if(find->argc)
+    {
+	int start = optind;
+
+	char val = find->opt_flag ? find->opt_flag : 1;
+
+	char opt_string[] = { find->opt_flag, ':', '\0' };
+
+	struct option opt_long[] =
+	    { { .name = find->opt_long, .val = val, }, {} };
+
+	int opt;
+	
+	while( -1 == (opt = getopt_long(find->argc,
+				 find->argv,
+				 opt_string,
+				 opt_long,
+					NULL)) )
+	{
+	    if(opt == val)
+	    {
+		return strcpy(malloc(strlen(optarg) + 1),optarg);
+	    }
+	}
+	
+	optind = start;
+    }
+    
+    const char * path = find->path;
+    
+    while(*path == '/')
+	path++;
+
+    char_array output = {};
+    if( -1 == find_file(&output,path) )
+    {
+	free(output.begin);
+	return NULL;
+    }
+
+    return output.begin;
 }

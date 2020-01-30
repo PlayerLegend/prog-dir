@@ -1,20 +1,23 @@
 #define FLAT_INCLUDES
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <pthread.h>
+
 #include "stack.h"
 #include "array.h"
 #include "index_map.h"
 #include "hash_table.h"
 #include "dictionary.h"
 #include "tcp_event.h"
-#include <unistd.h>
-#include <stdlib.h>
 #include "print.h"
 #include "sha256.h"
-#include <pthread.h>
 #include "range.h"
 #include "print_array.h"
-#include <string.h>
+#include "delimit.h"
+#include "options.h"
 
 enum arg_options {
     ARG_PORT = 'p',
@@ -23,6 +26,7 @@ enum arg_options {
 };
 
 typedef struct {
+    option_db options;
     char *service, *dbfile, *recordfile;
     struct {
 	int count;
@@ -30,7 +34,7 @@ typedef struct {
     }
 	files;
 }
-    program_args;
+    program_config;
 
 enum noise_tags {
     TAG_PATH,
@@ -58,7 +62,11 @@ typedef struct {
 	exit(1);						\
     }
 
-void set_args(program_args * args, int argc, char * argv[])
+#define OPTION_DBFILE "database_file"
+#define OPTION_RECORDFILE "record_file"
+#define OPTION_PORT "port"
+
+void read_program_args(program_config * config, int argc, char * argv[])
 {
     int opt;
     char options[] = { ARG_PORT, ':',
@@ -73,32 +81,26 @@ void set_args(program_args * args, int argc, char * argv[])
 	    if(!optarg)
 		OPT_ERROR_NOARG(opt,"port");
 
-	    free(args->service);
-	    args->service = optarg;
-	    
+	    *set_option_string(&config->options,OPTION_PORT) = optarg;
 	    break;
 
 	case ARG_DBFILE:
 	    if(!optarg)
 		OPT_ERROR_NOARG(opt,"database file");
 
-	    free(args->dbfile);
-	    args->dbfile = optarg;
-	    
+	    *set_option_string(&config->options,OPTION_DBFILE) = optarg;
 	    break;
 
 	case ARG_RECORDFILE:
 	    if(!optarg)
 		OPT_ERROR_NOARG(opt,"record file");
 
-	    free(args->recordfile);
-	    args->recordfile = optarg;
-	    
+	    *set_option_string(&config->options,OPTION_RECORDFILE) = optarg;
 	    break;
 	}
     
-    args->files.count = argc - optind;
-    args->files.names = argv + optind;
+    config->files.count = argc - optind;
+    config->files.names = argv + optind;
 }
 
 void database_delete(database * db, const char * noise, unsigned int tag_id, const char * tag_val)
@@ -201,8 +203,6 @@ int database_import_line(database * db, char * text, int tag_name_index[])
     if(tag == LIMIT_TAG)
 	return -1;
 
-    db_entry * entry = dictionary_access_key(&db->dictionary,noise);
-
     database_add(db,noise,tag,value);
 
     return 0;
@@ -252,21 +252,58 @@ char * get_config_path(char * path)
     return ret;
 }
 
-void get_args_defaults(program_args * args)
+void set_defaults(option_db * options)
 {
-    *args = (program_args)
+    *set_option_string(options,OPTION_PORT) = "7921";
+    *set_option_string(options,OPTION_RECORDFILE) = ".sha256-daemon/records";
+    *set_option_string(options,OPTION_DBFILE) = ".sha256-daemon/db";
+}
+
+void read_config_file(option_db * options, int argc, char * argv[])
+{
+    config_location config_location =
+	{
+	    .path = "sha256-daemon.conf",
+	    .argc = argc,
+	    .argv = argv,
+	    .opt_flag = 'c',
+	    .opt_long = "config",
+	};
+
+    char * config_path;
+
+    if( NULL != (config_path = find_config(&config_location)) )
     {
-	.service = dupe_string("7892"),
-	.dbfile = get_config_path("database.txt"),
-	.recordfile = get_config_path("record.txt"),
-    };
+	FILE * config = fopen(config_path,"r");
+
+	if(!config)
+	{
+	    perror(config_path);
+	    print_error("Error accessing config %s",config_location);
+	    free(config_path);
+	    exit(1);
+	}
+
+	if( -1 == load_options_file(options,config) )
+	{
+	    print_error("Error parsing config %s",config_location);
+	    free(config_path);
+	    fclose(config);
+	    exit(1);
+	}
+	    
+	free(config_path);
+	fclose(config);
+    }
 }
 
 int main(int argc, char * argv[])
 {
-    program_args args;
-    get_args_defaults(&args);
-    set_args(&args,argc,argv);
-
+    program_config config = {};
+    options_init(&config.options);
+    set_defaults(&config.options);    
+    read_config_file(&config.options,argc,argv);
+    read_program_args(&config,argc,argv);
+    
     return 0;
 }
