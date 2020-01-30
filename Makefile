@@ -9,6 +9,8 @@ export PREFIX ?= /usr/local
 
 export CFLAGS += -Iinclude
 
+DEFAULT_GCC_INCLUDES = $(shell printf -- '-I%s\n' `gcc -v -x c -E /dev/null 2>&1 | grep ^' ' | tail -n +2`)
+
 .PHONY: $(ALL_STUB) all install release debug build
 
 all: release
@@ -21,6 +23,9 @@ debug:
 
 install:
 	TMP_PREFIX="$(PREFIX)" $(MAKE) release
+
+build-program:
+	$(MAKE) stub/enabled/$(PROGRAM).makefile
 
 build: $(ALL_STUB)
 
@@ -53,8 +58,7 @@ $(ALL_STUB): make/depend.makefile
 
 make/depend.makefile: $(ALL_SRC) 
 	touch make/depend.makefile
-	makedepend -f make/depend.makefile -- $(CFLAGS) -- $(ALL_C)
+	makedepend -m -Y -f make/depend.makefile -- $(CFLAGS) -- $(ALL_C) 2> /dev/null
 
 clean:
 	rm -f make/depend.makefile make/depend.makefile.bak $(ALL_OBJ)
-# DO NOT DELETE
