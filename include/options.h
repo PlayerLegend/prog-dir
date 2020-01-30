@@ -1,8 +1,15 @@
 typedef struct {
-    char * flag;
-    char * name;
+    const char * config_name;
+    const char * getopt_flags;
+}
+    option_config;
+
+typedef struct {
+    int flag;
+    const char * name;
+    const char * handle;
     char * value;
 }
     option_desc;
 
-void load_options(option_desc * desc, const char * config_name);
+void load_options(option_desc * desc, option_config * config);

@@ -16,7 +16,7 @@ void delimit(delimited_string * out, char * input, char delim)
     
     *array_push(out) = input;
 
-    char * next = input;
+    char * next;
 
     while( (next = strchr(next,delim)) )
     {
