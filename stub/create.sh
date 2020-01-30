@@ -10,7 +10,7 @@ then
     exit 1
 fi
 
-stub_name=available/"$(basename "$program_name")".makefile
+stub_name=enabled/"$(basename "$program_name")".makefile
 
 if test -e "$stub_name"
 then

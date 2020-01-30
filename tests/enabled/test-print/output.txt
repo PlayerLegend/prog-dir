@@ -1,0 +1,12 @@
+write: 'asdf: bcle'
+write: 'bcle: asdf'
+append: 'asdf: '
+append: 'asdf: bcle'
+written array #1(52): 'asdf writing the array once 100 200 heres a string
+'
+written array #2(64): '1234 writing the array again some string #1 200 some string #2
+'
+have: 63, need 118
+appended array(118): '1234 writing the array again some string #1 200 some string #2
+appending the arrayyyyy 450 200 heres a string again
+'
