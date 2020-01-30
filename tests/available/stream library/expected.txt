@@ -1,0 +1,172 @@
+Testing file streaming
+char: t
+char: h
+char: i
+char: s
+char:  
+char: i
+char: s
+char:  
+char: a
+char:  
+char: f
+char: i
+char: l
+char: e
+char:  
+char: t
+char: h
+char: a
+char: t
+char:  
+char: g
+char: e
+char: t
+char: s
+char:  
+char: r
+char: e
+char: a
+char: d
+char:  
+char: b
+char: y
+char:  
+char: t
+char: h
+char: e
+char:  
+char: s
+char: t
+char: r
+char: e
+char: a
+char: m
+char:  
+char: t
+char: e
+char: s
+char: t
+char: 
+
+char: i
+char: t
+char:  
+char: s
+char: h
+char: o
+char: u
+char: l
+char: d
+char:  
+char: b
+char: e
+char:  
+char: k
+char: i
+char: n
+char: d
+char: a
+char:  
+char: l
+char: o
+char: n
+char: g
+char:  
+char: s
+char: o
+char:  
+char: t
+char: h
+char: a
+char: t
+char:  
+char: i
+char: t
+char:  
+char: l
+char: o
+char: a
+char: d
+char: s
+char:  
+char: t
+char: h
+char: e
+char:  
+char: b
+char: u
+char: f
+char: f
+char: e
+char: r
+char:  
+char: a
+char:  
+char: f
+char: e
+char: w
+char:  
+char: t
+char: i
+char: m
+char: e
+char: s
+char: 
+
+Testing memory streaming
+char: t
+char: h
+char: i
+char: s
+char:  
+char: i
+char: s
+char:  
+char: a
+char:  
+char: s
+char: t
+char: r
+char: i
+char: n
+char: g
+char:  
+char: t
+char: h
+char: a
+char: t
+char: s
+char:  
+char: k
+char: i
+char: n
+char: d
+char: a
+char:  
+char: l
+char: o
+char: n
+char: g
+char:  
+char: a
+char: n
+char: d
+char:  
+char: g
+char: e
+char: t
+char: s
+char:  
+char: t
+char: h
+char: e
+char:  
+char: j
+char: o
+char: b
+char:  
+char: d
+char: o
+char: n
+char: e

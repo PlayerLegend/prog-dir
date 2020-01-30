@@ -1,0 +1,4 @@
+write: 'asdf: bcle'
+write: 'bcle: asdf'
+append: 'asdf: '
+append: 'asdf: bcle'

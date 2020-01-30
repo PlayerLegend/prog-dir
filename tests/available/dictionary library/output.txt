@@ -1,0 +1,10 @@
+asdf: 100
+bcle: 150
+for 0x3039, 12 == 12
+yes
+for 0x2b73, 14 == 14
+yes
+for 0xc5490, 57 == 57
+yes
+for 0x7b4da9, 8 == 8
+yes

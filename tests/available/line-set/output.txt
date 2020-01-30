@@ -1,0 +1,118 @@
+AND (default):
+six
+eight
+two
+four
+====
+AND (and):
+six
+eight
+two
+four
+====
+AND (a):
+six
+eight
+two
+four
+====
+AND (i):
+six
+eight
+two
+four
+====
+AND (intersection):
+six
+eight
+two
+four
+====
+OR (or):
+ten
+two
+three
+sixteen
+eight
+fourteen
+seven
+twelve
+four
+five
+nine
+six
+one
+====
+OR (union):
+ten
+two
+three
+sixteen
+eight
+fourteen
+seven
+twelve
+four
+five
+nine
+six
+one
+====
+OR (union):
+ten
+two
+three
+sixteen
+eight
+fourteen
+seven
+twelve
+four
+five
+nine
+six
+one
+====
+OR (union):
+ten
+two
+three
+sixteen
+eight
+fourteen
+seven
+twelve
+four
+five
+nine
+six
+one
+====
+NOT (not):
+five
+seven
+three
+nine
+====
+NOT (n):
+five
+seven
+three
+nine
+====
+EMPTY (double empty line with AND):
+====
+UNCHANGED (double empty line with OR):
+ten
+two
+three
+sixteen
+eight
+fourteen
+seven
+twelve
+four
+five
+nine
+six
+one

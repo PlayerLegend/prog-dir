@@ -1,0 +1,3 @@
+*.o
+make/depend.makefile
+make/depend.makefile.bak

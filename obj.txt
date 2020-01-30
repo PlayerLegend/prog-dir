@@ -1,0 +1,13 @@
+#programs
+
+#tests
+tests/test-program src/tests/test-program.o
+#tests/tokenize src/tests/test-tokenize.o src/tokenize.o src/serial.o src/stack.o src/tree.o
+#tests/serial-file src/tests/test-serial-file.o src/serial.o
+#tests/serial-mem src/tests/test-serial-mem.o src/serial.o
+tests/stack src/tests/test-stack.o src/stack.o
+tests/hash-table src/tests/test-hash-table.o src/hash_table.o src/hash_table_string.o src/print.o src/stack.o
+tests/index-map src/tests/test-index_map.o src/index_map.o
+tests/dictionary src/tests/test-dictionary.o src/stack.o src/index_map.o src/hash_table.o src/hash_table_string.o src/print.o
+tests/array src/tests/test-array.o src/stack.o
+tests/sums-file src/tests/test-sums_file.o src/sums_file.o src/index_map.o src/hash_table.o src/hash_table_string.o src/print.o src/stack.o

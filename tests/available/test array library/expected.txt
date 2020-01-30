@@ -1,0 +1,358 @@
+add [0]
+add [1]
+add [2]
+add [3]
+add [4]
+add [5]
+add [6]
+add [7]
+add [8]
+add [9]
+add [10]
+add [11]
+add [12]
+add [13]
+add [14]
+add [15]
+add [16]
+add [17]
+add [18]
+add [19]
+add [20]
+add [21]
+add [22]
+add [23]
+add [24]
+add [25]
+add [26]
+add [27]
+add [28]
+add [29]
+add [30]
+add [31]
+add [32]
+add [33]
+add [34]
+add [35]
+add [36]
+add [37]
+add [38]
+add [39]
+add [40]
+add [41]
+add [42]
+add [43]
+add [44]
+add [45]
+add [46]
+add [47]
+add [48]
+add [49]
+add [50]
+add [51]
+add [52]
+add [53]
+add [54]
+add [55]
+add [56]
+add [57]
+add [58]
+add [59]
+add [60]
+add [61]
+add [62]
+add [63]
+add [64]
+add [65]
+add [66]
+add [67]
+add [68]
+add [69]
+add [70]
+add [71]
+add [72]
+add [73]
+add [74]
+add [75]
+add [76]
+add [77]
+add [78]
+add [79]
+add [80]
+add [81]
+add [82]
+add [83]
+add [84]
+add [85]
+add [86]
+add [87]
+add [88]
+add [89]
+add [90]
+add [91]
+add [92]
+add [93]
+add [94]
+add [95]
+add [96]
+add [97]
+add [98]
+add [99]
+iterate [0]: 0
+iterate [1]: -1
+iterate [2]: -2
+iterate [3]: -3
+iterate [4]: -4
+iterate [5]: -5
+iterate [6]: -6
+iterate [7]: -7
+iterate [8]: -8
+iterate [9]: -9
+iterate [10]: -10
+iterate [11]: -11
+iterate [12]: -12
+iterate [13]: -13
+iterate [14]: -14
+iterate [15]: -15
+iterate [16]: -16
+iterate [17]: -17
+iterate [18]: -18
+iterate [19]: -19
+iterate [20]: -20
+iterate [21]: -21
+iterate [22]: -22
+iterate [23]: -23
+iterate [24]: -24
+iterate [25]: -25
+iterate [26]: -26
+iterate [27]: -27
+iterate [28]: -28
+iterate [29]: -29
+iterate [30]: -30
+iterate [31]: -31
+iterate [32]: -32
+iterate [33]: -33
+iterate [34]: -34
+iterate [35]: -35
+iterate [36]: -36
+iterate [37]: -37
+iterate [38]: -38
+iterate [39]: -39
+iterate [40]: -40
+iterate [41]: -41
+iterate [42]: -42
+iterate [43]: -43
+iterate [44]: -44
+iterate [45]: -45
+iterate [46]: -46
+iterate [47]: -47
+iterate [48]: -48
+iterate [49]: -49
+iterate [50]: -50
+iterate [51]: -51
+iterate [52]: -52
+iterate [53]: -53
+iterate [54]: -54
+iterate [55]: -55
+iterate [56]: -56
+iterate [57]: -57
+iterate [58]: -58
+iterate [59]: -59
+iterate [60]: -60
+iterate [61]: -61
+iterate [62]: -62
+iterate [63]: -63
+iterate [64]: -64
+iterate [65]: -65
+iterate [66]: -66
+iterate [67]: -67
+iterate [68]: -68
+iterate [69]: -69
+iterate [70]: -70
+iterate [71]: -71
+iterate [72]: -72
+iterate [73]: -73
+iterate [74]: -74
+iterate [75]: -75
+iterate [76]: -76
+iterate [77]: -77
+iterate [78]: -78
+iterate [79]: -79
+iterate [80]: -80
+iterate [81]: -81
+iterate [82]: -82
+iterate [83]: -83
+iterate [84]: -84
+iterate [85]: -85
+iterate [86]: -86
+iterate [87]: -87
+iterate [88]: -88
+iterate [89]: -89
+iterate [90]: -90
+iterate [91]: -91
+iterate [92]: -92
+iterate [93]: -93
+iterate [94]: -94
+iterate [95]: -95
+iterate [96]: -96
+iterate [97]: -97
+iterate [98]: -98
+iterate [99]: -99
+pop [0]: -99
+pop [1]: -98
+pop [2]: -97
+pop [3]: -96
+pop [4]: -95
+pop [5]: -94
+pop [6]: -93
+pop [7]: -92
+pop [8]: -91
+pop [9]: -90
+pop [10]: -89
+pop [11]: -88
+pop [12]: -87
+pop [13]: -86
+pop [14]: -85
+pop [15]: -84
+pop [16]: -83
+pop [17]: -82
+pop [18]: -81
+pop [19]: -80
+pop [20]: -79
+pop [21]: -78
+pop [22]: -77
+pop [23]: -76
+pop [24]: -75
+pop [25]: -74
+pop [26]: -73
+pop [27]: -72
+pop [28]: -71
+pop [29]: -70
+pop [30]: -69
+pop [31]: -68
+pop [32]: -67
+pop [33]: -66
+pop [34]: -65
+pop [35]: -64
+pop [36]: -63
+pop [37]: -62
+pop [38]: -61
+pop [39]: -60
+pop [40]: -59
+pop [41]: -58
+pop [42]: -57
+pop [43]: -56
+pop [44]: -55
+pop [45]: -54
+pop [46]: -53
+pop [47]: -52
+pop [48]: -51
+pop [49]: -50
+pop [50]: -49
+pop [51]: -48
+pop [52]: -47
+pop [53]: -46
+pop [54]: -45
+pop [55]: -44
+pop [56]: -43
+pop [57]: -42
+pop [58]: -41
+pop [59]: -40
+pop [60]: -39
+pop [61]: -38
+pop [62]: -37
+pop [63]: -36
+pop [64]: -35
+pop [65]: -34
+pop [66]: -33
+pop [67]: -32
+pop [68]: -31
+pop [69]: -30
+pop [70]: -29
+pop [71]: -28
+pop [72]: -27
+pop [73]: -26
+pop [74]: -25
+pop [75]: -24
+pop [76]: -23
+pop [77]: -22
+pop [78]: -21
+pop [79]: -20
+pop [80]: -19
+pop [81]: -18
+pop [82]: -17
+pop [83]: -16
+pop [84]: -15
+pop [85]: -14
+pop [86]: -13
+pop [87]: -12
+pop [88]: -11
+pop [89]: -10
+pop [90]: -9
+pop [91]: -8
+pop [92]: -7
+pop [93]: -6
+pop [94]: -5
+pop [95]: -4
+pop [96]: -3
+pop [97]: -2
+pop [98]: -1
+pop [99]: 0
+added 2, 4, 6, 8, 10
+pop [4]: 10
+pop [3]: 8
+pop [2]: 6
+pop [1]: 4
+pop [0]: 2
+
+adding 100 and deleting the first 50
+pop [49]: -99
+pop [48]: -98
+pop [47]: -97
+pop [46]: -96
+pop [45]: -95
+pop [44]: -94
+pop [43]: -93
+pop [42]: -92
+pop [41]: -91
+pop [40]: -90
+pop [39]: -89
+pop [38]: -88
+pop [37]: -87
+pop [36]: -86
+pop [35]: -85
+pop [34]: -84
+pop [33]: -83
+pop [32]: -82
+pop [31]: -81
+pop [30]: -80
+pop [29]: -79
+pop [28]: -78
+pop [27]: -77
+pop [26]: -76
+pop [25]: -75
+pop [24]: -74
+pop [23]: -73
+pop [22]: -72
+pop [21]: -71
+pop [20]: -70
+pop [19]: -69
+pop [18]: -68
+pop [17]: -67
+pop [16]: -66
+pop [15]: -65
+pop [14]: -64
+pop [13]: -63
+pop [12]: -62
+pop [11]: -61
+pop [10]: -60
+pop [9]: -59
+pop [8]: -58
+pop [7]: -57
+pop [6]: -56
+pop [5]: -55
+pop [4]: -54
+pop [3]: -53
+pop [2]: -52
+pop [1]: -51
+pop [0]: -50

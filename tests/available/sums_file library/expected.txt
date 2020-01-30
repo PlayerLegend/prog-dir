@@ -1,0 +1,38 @@
+[sums] [Makefile] 
+Listing 1 sums for 'Makefile':
+	01bb4e576a14269851e4bc8f2a89115540bd5a3be6677e2ef25f30454a66e161
+Done
+[sums] [include/tree.h] 
+Listing 1 sums for 'include/tree.h':
+	38a9ebca5392298d7e2582f360a31bec321dfa660bb9545ad8b6c4a05d9fa1b0
+Done
+[sums] [src/stack.c] 
+Listing 1 sums for 'src/stack.c':
+	f549c7c178684ee9ac72ddc1a335cc2f7664beac96f606aec9017b65fe1316b4
+Done
+[names] [8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c] 
+Listing 1 names for '8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c':
+	test-scripts/create.sh
+Done
+[sums] [test-scripts/create.sh] 
+Listing 1 sums for 'test-scripts/create.sh':
+	8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c
+Done
+[names] [8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c] 
+Listing 1 names for '8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c':
+	test-scripts/create.sh
+Done
+[names] [8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c] 
+Listing 1 names for '8657319cfae0f8cda87da8bcc5a7376bcd750e934a90605526cdc332a80e533c':
+	test-scripts/create.sh
+Done
+[sums] [e380661bd282bb913ce47f2eb02956561e235036c7249f32c8ef09204c7a5821] 
+Listing 0 sums for 'e380661bd282bb913ce47f2eb02956561e235036c7249f32c8ef09204c7a5821':
+Done
+[names] [e380661bd282bb913ce47f2eb02956561e235036c7249f32c8ef09204c7a5821] 
+Listing 1 names for 'e380661bd282bb913ce47f2eb02956561e235036c7249f32c8ef09204c7a5821':
+	test-scripts/exec.sh
+Done
+[sums] [e380661bd282bb913ce47f2eb02956561e235036c7249f32c8ef09204c7a5821] 
+Listing 0 sums for 'e380661bd282bb913ce47f2eb02956561e235036c7249f32c8ef09204c7a5821':
+Done

@@ -1,0 +1,141 @@
+
+Starting clause test for predicates.txt, separators ' '(1), separator count 0
+[000] clause: [asdf] [bcle]
+[001] clause: [asdf] [bcle]
+[002] clause: [12] [2 3]
+[003] clause: [12] [3 4 5 678]
+[004] clause: [12] [234567 3718293]
+[005] clause: [ldkjfei] [98]
+[006] clause: [a] [asdf]
+[007] clause: [asdf] [f]
+[008] clause: [a] [asdf]
+[009] clause: [asdf] [f]
+[010] clause: [1tab] [	 and 2spaces]
+[011] clause: [2tab		] [and 2spaces]
+[012] clause: [3tab			and] [no spaces]
+
+Starting clause test for predicates.txt, separators ' '(1), separator count 1
+[000] clause: [asdf] [ bcle]
+[001] clause: [asdf] [  bcle]
+[002] clause: [12] [2 3]
+[003] clause: [12] [ 3 4 5 678]
+[004] clause: [12] [234567 3718293]
+[005] clause: [ldkjfei] [98]
+[006] clause: [a] [asdf]
+[007] clause: [asdf] [f]
+[008] clause: [a] [ asdf]
+[009] clause: [asdf] [ f]
+[010] clause: [1tab] [	 and 2spaces]
+[011] clause: [2tab		] [ and 2spaces]
+[012] clause: [3tab			and] [no spaces]
+
+Starting clause test for predicates.txt, separators ' '(1), separator count 2
+[000] clause: [asdf] [bcle]
+[001] clause: [asdf] [ bcle]
+[002] failed clause for '12 2 3'
+[003] clause: [12] [3 4 5 678]
+[004] failed clause for '12 234567 3718293'
+[005] failed clause for 'ldkjfei 98'
+[006] failed clause for 'a asdf'
+[007] failed clause for 'asdf f'
+[008] clause: [a] [asdf]
+[009] clause: [asdf] [f]
+[010] failed clause for '1tab 	 and 2spaces'
+[011] clause: [2tab		] [and 2spaces]
+[012] failed clause for '3tab			and no spaces'
+
+Starting clause test for predicates.txt, separators ' '(1), separator count 3
+[000] failed clause for 'asdf  bcle'
+[001] clause: [asdf] [bcle]
+[002] failed clause for '12 2 3'
+[003] failed clause for '12  3 4 5 678'
+[004] failed clause for '12 234567 3718293'
+[005] failed clause for 'ldkjfei 98'
+[006] failed clause for 'a asdf'
+[007] failed clause for 'asdf f'
+[008] failed clause for 'a  asdf'
+[009] failed clause for 'asdf  f'
+[010] failed clause for '1tab 	 and 2spaces'
+[011] failed clause for '2tab		  and 2spaces'
+[012] failed clause for '3tab			and no spaces'
+
+Starting clause test for predicates.txt, separators ' 	'(2), separator count 0
+[000] clause: [asdf] [bcle]
+[001] clause: [asdf] [bcle]
+[002] clause: [12] [2 3]
+[003] clause: [12] [3 4 5 678]
+[004] clause: [12] [234567 3718293]
+[005] clause: [ldkjfei] [98]
+[006] clause: [a] [asdf]
+[007] clause: [asdf] [f]
+[008] clause: [a] [asdf]
+[009] clause: [asdf] [f]
+[010] clause: [1tab] [and 2spaces]
+[011] clause: [2tab] [and 2spaces]
+[012] clause: [3tab] [and no spaces]
+
+Starting clause test for predicates.txt, separators ' 	'(2), separator count 1
+[000] clause: [asdf] [ bcle]
+[001] clause: [asdf] [  bcle]
+[002] clause: [12] [2 3]
+[003] clause: [12] [ 3 4 5 678]
+[004] clause: [12] [234567 3718293]
+[005] clause: [ldkjfei] [98]
+[006] clause: [a] [asdf]
+[007] clause: [asdf] [f]
+[008] clause: [a] [ asdf]
+[009] clause: [asdf] [ f]
+[010] clause: [1tab] [	 and 2spaces]
+[011] clause: [2tab] [	  and 2spaces]
+[012] clause: [3tab] [		and no spaces]
+
+Starting clause test for predicates.txt, separators ' 	'(2), separator count 2
+[000] clause: [asdf] [bcle]
+[001] clause: [asdf] [ bcle]
+[002] failed clause for '12 2 3'
+[003] clause: [12] [3 4 5 678]
+[004] failed clause for '12 234567 3718293'
+[005] failed clause for 'ldkjfei 98'
+[006] failed clause for 'a asdf'
+[007] failed clause for 'asdf f'
+[008] clause: [a] [asdf]
+[009] clause: [asdf] [f]
+[010] clause: [1tab] [ and 2spaces]
+[011] clause: [2tab] [  and 2spaces]
+[012] clause: [3tab] [	and no spaces]
+
+Starting clause test for predicates.txt, separators ' 	'(2), separator count 3
+[000] failed clause for 'asdf  bcle'
+[001] clause: [asdf] [bcle]
+[002] failed clause for '12 2 3'
+[003] failed clause for '12  3 4 5 678'
+[004] failed clause for '12 234567 3718293'
+[005] failed clause for 'ldkjfei 98'
+[006] failed clause for 'a asdf'
+[007] failed clause for 'asdf f'
+[008] failed clause for 'a  asdf'
+[009] failed clause for 'asdf  f'
+[010] clause: [1tab] [and 2spaces]
+[011] clause: [2tab] [ and 2spaces]
+[012] clause: [3tab] [and no spaces]
+
+Starting list test for lists.txt, whitespace ' '(1)
+[000] list: [asdlfkjslkadfj] [laksdf,] [oeriuwor] [(sdf)] [aaaa bbbb]
+[001] list: [asdfl] [weoiruweor] [oywtoy8]
+[002] list: [123] [\\234] [345 456\] [234]
+[003] list: [multiple] [spaces]
+[004] list: [varying] [	] [whitespace] [	chars]
+
+Starting list test for lists.txt, whitespace ' '(1)
+[000] list: [asdlfkjslkadfj] [laksdf,] [oeriuwor] [(sdf)] [aaaa bbbb]
+[001] list: [asdfl] [weoiruweor] [oywtoy8]
+[002] list: [123] [\234] [345 456" 234]
+[003] list: [multiple] [spaces]
+[004] list: [varying] [	] [whitespace] [	chars]
+
+Starting list test for lists.txt, whitespace ' 	'(2)
+[000] list: [asdlfkjslkadfj] [laksdf,] [oeriuwor] [(sdf)] [aaaa bbbb]
+[001] list: [asdfl] [weoiruweor] [oywtoy8]
+[002] list: [123] [\234] [345 456" 234]
+[003] list: [multiple] [spaces]
+[004] list: [varying] [whitespace] [chars]
