@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "range.h"
 
-static char find_c(char c, char * list)
+static char find_c(char c, const char * list)
 {
     if(!list)
 	return '\0';
@@ -16,11 +16,6 @@ static char find_c(char c, char * list)
 	    break;
 
     return test;
-}
-
-static char * dupe_str(const char * str)
-{
-    return strcpy(malloc(strlen(str) + 1),str);
 }
 
 #define finalize_word(out,build)		\

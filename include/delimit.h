@@ -16,7 +16,7 @@ typedef struct {
 typedef array(char*) delimited_list;
 
 typedef struct {
-    char * separator_list;
+    const char * separator_list;
     int separator_count;
     bool fail_empty_subject;
     bool fail_empty_predicate;

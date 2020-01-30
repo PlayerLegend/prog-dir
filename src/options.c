@@ -136,14 +136,39 @@ int set_option_clause(option_db * db, const clause * clause)
     return -1;
 }
 
+static char find_c(char c, const char * list)
+{
+    if(!list)
+	return '\0';
+    
+    char test;
+    while( (test = *list++) )
+	if(test == c)
+	    break;
+
+    return test;
+}
+
+bool is_comment(const char * text, const char * whitespace, char comment_char)
+{
+    while( find_c(*text,whitespace) )
+	text++;
+
+    return *text == comment_char;
+}
+
 int load_options_file(option_db * db, FILE * file)
 {
     struct { char * text; size_t len; } line = {};
     clause clause;
-    clause_config clause_config = { .separator_list = " \t" };
+    const char * whitespace = " \t";
+    clause_config clause_config = { .separator_list = whitespace };
     
     while( -1 != getline(&line.text,&line.len,file) )
     {
+	if(is_comment(line.text,whitespace,'#'))
+	    continue;
+	
 	delimit_terminate(line.text,'\n');
 	if( 0 != delimit_clause(&clause,&clause_config,line.text) ||
 	    0 != set_option_clause(db,&clause) )
