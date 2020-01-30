@@ -2,7 +2,7 @@
 #include "print.h"
 #include <stdlib.h>
 #include <string.h>
-#include "for_range.h"
+#include "range.h"
 
 void test_clauses(const char * file_name,  clause_config config)
 {

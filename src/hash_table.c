@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>
-#include "for_range.h"
+#include "range.h"
 
 #define GOLDEN_RATIO 1.61803398875
 #define INITIAL_PRIME 27

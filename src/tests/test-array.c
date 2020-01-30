@@ -1,5 +1,5 @@
 #include "array.h"
-#include "for_range.h"
+#include "range.h"
 #include <assert.h>
 
 int main()

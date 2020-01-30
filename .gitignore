@@ -1,3 +1,5 @@
 *.o
 make/depend.makefile
 make/depend.makefile.bak
+Makefile.bak
+prefix
