@@ -29,7 +29,6 @@ void test_clauses(const char * file_name,  clause_config config)
 	    printf("[%03d] failed clause for '%s'\n",count,line.text);
 	else
 	    printf("[%03d] clause: [%s] [%s]\n",count,clause.subject,clause.predicate);
-	clear_clause(&clause);
 	count++;
     }
 

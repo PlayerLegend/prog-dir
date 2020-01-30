@@ -97,12 +97,12 @@ int count_c(char * start, char c)
     return count;
 }
 
-int delimit_clause(clause * out, const clause_config * config, const char * input)
+int delimit_clause(clause * out, const clause_config * config, char * input)
 {
     assert(*config->separator_list != '\0');
 
-    const char * end_subject;
-    const char * begin_predicate;
+    char * end_subject;
+    char * begin_predicate;
 
     end_subject = input;
     
@@ -123,6 +123,8 @@ int delimit_clause(clause * out, const clause_config * config, const char * inpu
 
     int sep_count = begin_predicate - end_subject;
     
+    *end_subject = '\0';
+	    
     if(config->separator_count)
     {
 	if(sep_count < config->separator_count)
@@ -132,15 +134,15 @@ int delimit_clause(clause * out, const clause_config * config, const char * inpu
 	}
 	else
 	{
-	    out->predicate = dupe_str(end_subject + config->separator_count);
-	    out->subject = strndup(input,end_subject - input);
+	    out->predicate = end_subject + config->separator_count;
+	    out->subject = input;
 	    return 0;
 	}
     }
     else
     {
-	out->predicate = dupe_str(begin_predicate);
-	out->subject = strndup(input,end_subject - input);
+	out->predicate = begin_predicate;
+	out->subject = input;
 	return 0;
     }
 }
@@ -150,13 +152,6 @@ void delimit_terminate(char * text, char end)
     char * find = strchr(text,end);
     if(find)
 	*find = '\0';
-}
-
-void clear_clause(void * target)
-{
-    free( ((clause*)target)->subject );
-    free( ((clause*)target)->predicate );
-    *(clause*)target = (clause){ 0 };
 }
 
 void clear_delimited_list(void * target)

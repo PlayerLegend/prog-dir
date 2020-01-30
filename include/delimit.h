@@ -24,14 +24,13 @@ typedef struct {
     clause_config;
 
 typedef struct {
-    char * subject;
-    char * predicate;
+    const char * subject;
+    const char * predicate;
 }
     clause;
 
 int delimit_list(delimited_list * out, const delimit_config * config, const char * input);
-int delimit_clause(clause * out, const clause_config * config, const char * input);
+int delimit_clause(clause * out, const clause_config * config, char * input);
 void delimit_terminate(char * text, char end);
 
-void clear_clause(void * target);
 void clear_delimited_list(void * target);
