@@ -42,6 +42,8 @@ static void set_state(option_entry * entry, enum option_state new_state)
 
 char ** set_option_string(option_db * db, const char * name)
 {
+    printf("set %s\n",name);
+    
     option_entry * entry = dictionary_access_key(db,name);
     set_state(entry,OPTION_STRING);
     return &entry->strval;
@@ -268,12 +270,13 @@ char * find_config(const config_location * find)
 
 	int opt;
 	
-	while( -1 == (opt = getopt_long(find->argc,
+	while( -1 != (opt = getopt_long(find->argc,
 				 find->argv,
 				 opt_string,
 				 opt_long,
 					NULL)) )
 	{
+	    printf("asdf '%s' '%s'\n",find->opt_long, opt_string);
 	    if(opt == val)
 	    {
 		return strcpy(malloc(strlen(optarg) + 1),optarg);
@@ -302,6 +305,8 @@ const char * get_option_string(option_db * db, const char * name)
 {
     option_entry * entry = dictionary_access_key(db,name);
 
+    printf("option: %d\n",entry->state);
+    
     assert(entry->state == OPTION_STRING);
 
     return entry->strval;

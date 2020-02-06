@@ -70,6 +70,13 @@ static int table_copy_file_uid(void ** dst, const void * src)
 	    .free = free	\
 	    }
 
+static void terminate(char * text)
+{
+    while( *text && *text != '\n' )
+	text++;
+    *text = '\0';
+}
+
 static int get_file_uid_size(file_uid * uid, size_t * size, const char * path)
 {
     struct stat s;
@@ -220,6 +227,8 @@ static FILE * open_database(const char * file_name, const char * header)
 	return NULL;
     }
 
+    terminate(line.text);
+
     if( 0 != strcmp(line.text,header) )
     {
 	print_error("Incorrect database type, needed '%s', got '%s'\n",header,line.text);
@@ -249,7 +258,6 @@ int db_load_multiple(db_multiple ** db, const char * file_name)
     FILE * file;
     if( NULL == (file = open_database(file_name,"multiple")) )
     {
-	perror(file_name);
 	return -1;
     }
 
@@ -259,6 +267,8 @@ int db_load_multiple(db_multiple ** db, const char * file_name)
 
     while( -1 != getline(&line.text,&line.len,file) )
     {
+	terminate(line.text);
+	
 	if( '\0' == *line.text )
 	{
 	    key = 0;
@@ -307,7 +317,6 @@ int db_load_single(db_single ** db, const char * file_name)
     FILE * file;
     if( NULL == (file = open_database(file_name,"single")) )
     {
-	perror(file_name);
 	return -1;
     }
 
@@ -321,6 +330,8 @@ int db_load_single(db_single ** db, const char * file_name)
     while( -1 != getline(&line.text,&line.len,file) )
     {
 	lno++;
+
+	terminate(line.text);
 	
 	if( *line.text == '\0' )
 	{

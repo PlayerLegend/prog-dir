@@ -118,7 +118,6 @@ int delimit_clause(clause * out, const clause_config * config, char * input)
 
     int sep_count = begin_predicate - end_subject;
     
-    *end_subject = '\0';
 	    
     if(config->separator_count)
     {
@@ -129,6 +128,7 @@ int delimit_clause(clause * out, const clause_config * config, char * input)
 	}
 	else
 	{
+	    *end_subject = '\0';
 	    out->predicate = end_subject + config->separator_count;
 	    out->subject = input;
 	    return 0;
@@ -136,6 +136,7 @@ int delimit_clause(clause * out, const clause_config * config, char * input)
     }
     else
     {
+	*end_subject = '\0';
 	out->predicate = begin_predicate;
 	out->subject = input;
 	return 0;

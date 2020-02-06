@@ -28,6 +28,8 @@ static void set_defaults()
 
 int init_config(int argc, char * argv[])
 {
+    options_init(&options);
+    
     set_defaults();
     
     config_location loc =

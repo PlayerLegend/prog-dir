@@ -76,6 +76,7 @@ run_test() {
 	  echo "Test produced incorrect output"
 	  print_file expected.txt 'Expected output'
 	  print_file output.txt 'Test output'
+	  diff --color=always expected.txt output.txt
 	  return 1
       else
 	  print_file output.txt 'Test output'
