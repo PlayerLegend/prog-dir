@@ -11,11 +11,12 @@
 #include "array.h"
 #include "index_map.h"
 #include "hash_table.h"
+#include "hash_table_string.h"
 #include "dictionary.h"
 #include "range.h"
-#include "nc-db/index_string.h"
 #include "nc-db/database.h"
 #include "print.h"
+#include "delimit.h"
 
 typedef struct {
     ino_t inode;
@@ -33,7 +34,11 @@ typedef struct {
 }
     loaded_db_entry;
 
-dictionary(loaded_db_entry) loaded_db;
+static struct {
+    dictionary(loaded_db_entry) loaded_db;
+    table string_table;
+}
+    static_var;
 
 static size_t table_digest_file_uid(const void * key)
 {
@@ -93,9 +98,22 @@ static int get_file_uid_size(file_uid * uid, size_t * size, const char * path)
     return 0;
 }
 
-void init_db()
+static void clean_db()
 {
-    dictionary_config(&loaded_db) = TABLE_CONFIG_FILE_UID;
+    
+}
+
+int init_db()
+{
+    dictionary_config(&static_var.loaded_db) = TABLE_CONFIG_FILE_UID;
+    static_var.string_table.config = TABLE_CONFIG_STRING;
+    atexit(clean_db);
+    if(0 != table_include(&static_var.string_table,""))
+    {
+	return -1;
+    }
+
+    return 0;
 }
 
 #define get_value(dbp,value)			\
@@ -112,55 +130,81 @@ void init_db()
     dictionary_indexof_key(&(dbp)->reverse,(void*)(key))
 
 
-void db_add_single(db_single * db, size_t key, size_t value)
+void db_add_single(db_single * db, key_value kv)
 {
     size_t * set;
 
-    set = get_value(db,key);
+    set = get_value(db,kv.key);
     size_t have = *set;
 
     if( have == 0 )
 	goto INSERT;
     
-    if( have == value )
+    if( have == kv.value )
 	return;
 
     *get_key(db,have) = 0;
-    set = get_value(db,key);
+    set = get_value(db,kv.key);
 
 INSERT:
-    *get_key(db,value) = key;
-    *set = value;
+    *get_key(db,kv.value) = kv.key;
+    *set = kv.value;
 }
 
-void db_add_multiple(db_multiple * db, size_t key, size_t value)
+void db_add_multiple(db_multiple * db, key_value kv)
 {
-    size_t * set = get_key(db,value);
+    size_t * set = get_key(db,kv.value);
     size_t have = *set;
 
     if( have == 0 )
 	goto INSERT;
 
-    if( have == key )
+    if( have == kv.key )
 	return;
 
     index_array * delete = get_value(db,have);
     for_range(i,*delete)
     {
-	if(*i == value)
+	if(*i == kv.value)
 	{
 	    array_flip_del(delete,i);
 	    break;
 	}
     }
 
-    set = get_key(db,value);
+    set = get_key(db,kv.value);
     
 INSERT:
     
-    *set = key;
-    index_array * add = get_value(db,key);
-    *array_push(add) = value;
+    *set = kv.key;
+    index_array * add = get_value(db,kv.key);
+    *array_push(add) = kv.value;
+}
+
+void db_delete_multiple(db_multiple * db, key_value kv)
+{
+    size_t * rev = get_key(db,kv.value);
+    if(*rev != kv.key)
+	return;
+    *rev = 0;
+    index_array * delete = get_value(db,kv.key);
+    for_range(i,*delete)
+    {
+	if(*i == kv.value)
+	{
+	    array_flip_del(delete,i);
+	    return;
+	}
+    }
+}
+
+void db_delete_single(db_single * db, key_value kv)
+{
+    size_t * fwd = get_value(db,kv.key);
+    if(*fwd != kv.value)
+	return;
+    *fwd = 0;
+    *get_key(db,kv.value) = 0;
 }
 
 static int init_path(const char * file_name, const char * line)
@@ -188,7 +232,7 @@ static int find_db(loaded_db_entry ** entry, const char * file_name, bool is_sin
     if( 0 == file_size && -1 == init_path(file_name,header) )
 	return -1;
     
-    *entry = dictionary_access_key(&loaded_db,&uid);
+    *entry = dictionary_access_key(&static_var.loaded_db,&uid);
 
     if( (*entry)->is_loaded )
     {
@@ -261,26 +305,16 @@ int db_load_multiple(db_multiple ** db, const char * file_name)
 	return -1;
     }
 
+    key_value kv;
+    
     struct { char * text; size_t len; } line = {0};
-    size_t key;
-    table * table = get_string_table();
 
     while( -1 != getline(&line.text,&line.len,file) )
     {
-	terminate(line.text);
-	
-	if( '\0' == *line.text )
-	{
-	    key = 0;
-	}
-	else if(0 == key)
-	{
-	    key = table_include(table,line.text);
-	}
-	else
-	{
-	    db_add_multiple(&entry->multiple,key,table_include(table,line.text));
-	}
+	if( -1 == db_make_kv(&kv,line.text) )
+	    goto ERROR;
+
+	db_add_multiple(&entry->multiple,kv);
     }
 
     if(ferror(file))
@@ -320,37 +354,15 @@ int db_load_single(db_single ** db, const char * file_name)
 	return -1;
     }
 
+    key_value kv;
     struct { char * text; size_t len; } line = {0};
-    size_t key = 0;
-    bool full = false;
-    table * table = get_string_table();
-
-    int lno = 0;
 
     while( -1 != getline(&line.text,&line.len,file) )
     {
-	lno++;
-
-	terminate(line.text);
-	
-	if( *line.text == '\0' )
-	{
-	    key = 0;
-	    full = false;
-	}
-	else if(key == 0)
-	{
-	    key = table_include(table,line.text);
-	}
-	else if(!full)
-	{
-	    db_add_single(&entry->single, key, table_include(table,line.text));
-	}
-	else
-	{
-	    print_error("Excess element in single database entry on line %d, offending element is '%s'",lno,line.text);
+	if( -1 == db_make_kv(&kv,line.text) )
 	    goto ERROR;
-	}
+
+	db_add_single(&entry->single,kv);
     }
 
     if(ferror(file))
@@ -369,4 +381,31 @@ ERROR:
 	fclose(file);
     free(line.text);
     return -1;
+}
+
+int db_make_kv(key_value * kv, char * line)
+{
+    clause_config clause_config =
+	{
+	    .separator_list = " ",
+	    .separator_count = 2,
+	};
+    
+    clause clause;
+
+    terminate(line);
+    
+    if( -1 == delimit_clause(&clause,&clause_config,line) )
+    {
+	print_error("Failed to parse sum line '%s'\n",line);
+	return -1;
+    }
+
+    *kv = (key_value)
+    {
+	.key = table_include(&static_var.string_table,clause.subject),
+	.value = table_include(&static_var.string_table,clause.predicate),
+    };
+
+    return 0;
 }

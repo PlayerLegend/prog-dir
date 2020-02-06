@@ -10,7 +10,7 @@
 #include "nc-db/index_string.h"
 #include "hash_table_string.h"
 
-static table string_table;
+table string_table;
 
 static void clean_string_index()
 {
@@ -27,9 +27,4 @@ int init_string_index()
     }
 
     return 0;
-}
-
-table * get_string_table()
-{
-    return &string_table;
 }

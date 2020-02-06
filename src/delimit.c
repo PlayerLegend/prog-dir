@@ -101,7 +101,7 @@ int delimit_clause(clause * out, const clause_config * config, char * input)
 
     end_subject = input;
     
-    while(*input && !find_c(*end_subject,config->separator_list))
+    while(*end_subject && !find_c(*end_subject,config->separator_list))
 	end_subject++;
 
     if(!*input)

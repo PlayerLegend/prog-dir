@@ -18,6 +18,11 @@ typedef dictionary(size_t) function_single;
 typedef dictionary(index_array) function_multiple;
 
 typedef struct {
+    size_t key, value;
+}
+    key_value;
+
+typedef struct {
     char * path;
     function_single forward, reverse;
 }
@@ -30,16 +35,20 @@ typedef struct {
 }
     db_multiple;
 
+int init_db();
+
+int db_make_kv(key_value * kv, char * line);
+void db_add_single(db_single * db, key_value kv);
+void db_delete_single(db_single * db, key_value kv);
+int db_load_single(db_single ** db, const char * file_name);
+
+void db_add_multiple(db_multiple * db, key_value kv);
+void db_delete_multiple(db_multiple * db, key_value kv);
+int db_load_multiple(db_multiple ** db, const char * file_name);
+
+
 #define db_lookup_forward(db_ptr,key)		\
     dictionary_access_key(&(db_ptr)->forward,(void*)table_include(&(db_ptr)->table,(key)))
 
 #define db_lookup_reverse(db_ptr,key)					\
     dictionary_access_key(&(db_ptr)->forward,(void*)table_include(&(db_ptr)->table,(key)))
-
-void init_db();
-
-void db_add_single(db_single * db, size_t key, size_t value);
-void db_add_multiple(db_multiple * db, size_t key, size_t value);
-
-int db_load_multiple(db_multiple ** db, const char * file_name);
-int db_load_single(db_single ** db, const char * file_name);

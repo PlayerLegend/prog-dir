@@ -79,14 +79,18 @@ inline static void start_io_state(struct ev_loop * loop, io_state * state)
 static void destroy_connection_handler(connection_handler * handler)
 {
     handler->config->disconnect(&handler->state);
+
+    printf("halting connection handler\n");
     
     if(handler->state.write.active)
     {
+	printf("halted write\n");
 	halt_io_state(handler->loop,&handler->write);
     }
 
     if(handler->state.read.active)
     {
+	printf("halted read\n");
 	halt_io_state(handler->loop,&handler->read);
     }
 
@@ -99,18 +103,18 @@ static void halt_server(connection_handler * handler)
     exit(1); // get rid of this
 }
 
-static void apply_state_changes(connection_handler * handler)
+static bool apply_state_changes(connection_handler * handler)
 {
     if(handler->state.halt_server)
     {
 	halt_server(handler);
-	return;
+	return false;
     }
     
     if(handler->state.disconnect)
     {
 	destroy_connection_handler(handler);
-	return;
+	return false;
     }
     
     if(handler->state.write.active != handler->write.active)
@@ -136,6 +140,8 @@ static void apply_state_changes(connection_handler * handler)
 	    halt_io_state(handler->loop,&handler->read);
 	}
     }
+
+    return true;
 }
 
 static void finish_write(struct ev_loop * loop, connection_handler * handler)
@@ -216,6 +222,8 @@ static void read_callback(struct ev_loop * loop, ev_io * watch, int recieved_eve
     char * term;
     char * finished = handler->read_bytes.begin;
     size_t count;
+
+    assert(handler != NULL);
     
     while(handler->state.read.active && NULL != (term = find_term(finished,handler->read_bytes.end,&handler->state.read.term_bytes)))
     {
@@ -225,7 +233,8 @@ static void read_callback(struct ev_loop * loop, ev_io * watch, int recieved_eve
 			    count);
 	finished += count;
 	handler->config->finished_read(&handler->state);
-	apply_state_changes(handler);
+	if( !apply_state_changes(handler) )
+	    return;
     }
 
     while(handler->state.read.active && handler->state.read.term_size < (size_t)(handler->read_bytes.end - finished))
@@ -237,7 +246,8 @@ static void read_callback(struct ev_loop * loop, ev_io * watch, int recieved_eve
 	finished += count;
 	
 	handler->config->finished_read(&handler->state);
-	apply_state_changes(handler);
+	if( !apply_state_changes(handler) )
+	    return;
     }
 
     if(finished != handler->read_bytes.begin)

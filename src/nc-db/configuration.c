@@ -23,7 +23,7 @@ char * dupe_string(const char * string)
 
 static void set_defaults()
 {
-    *set_option_string(&options,CONFIG_PORT) = dupe_string("7789");
+    *set_option_string(&options,CONFIG_PORT) = dupe_string("7793");
 }
 
 int init_config(int argc, char * argv[])

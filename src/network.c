@@ -131,6 +131,11 @@ static int net_host(char * service, int socktype)
     
     freeaddrinfo(info);
 
+//#ifndef NDEBUG
+//    int val = 1;
+//    setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&val,sizeof(val));
+//#endif
+
     return fd;
 }
 

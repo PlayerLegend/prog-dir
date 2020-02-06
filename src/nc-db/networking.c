@@ -14,32 +14,139 @@
 #include "range.h"
 #include "print.h"
 #include "print_array.h"
+#include "delimit.h"
 #include "nc-db/database.h"
 #include "nc-db/configuration.h"
-#include "nc-db/index_string.h"
 
-typedef struct {
-    enum { NO_TYPE,
-	   SET_SINGLE,
-	   SET_MULTIPLE,
-	   FWD_SINGLE,
-	   FWD_MULTIPLE,
-	   REV_SINGLE,
-	   REV_MULTIPLE, } state;
+typedef struct handler {
     union {
 	db_single * single;
 	db_multiple * multiple;
     };
-    size_t key;
-    bool full;
+    void (*think)(struct handler * handler, tcp_event_connection_state * state, char * message);
 }
     handler;
+
+#define client_error(fmt,...)		\
+    {						\
+	print_error(fmt,##__VA_ARGS__);		\
+	state->disconnect = true;		\
+	return;					\
+    }
+
+#define client_write(fmt,...)		\
+    {						\
+	print_array_append(&state->write.bytes,fmt "\n",##__VA_ARGS__);	\
+	state->write.active = true;					\
+    }
+
+
+#define client_kv()				\
+    key_value kv;				\
+    if( -1 == db_make_kv(&kv,message) )		\
+    {						\
+	state->disconnect = true;		\
+	return;					\
+    }
+
+void th_add_multiple(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    client_kv();
+    db_add_multiple(handler->multiple,kv);
+}
+
+void th_fwd_multiple(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    client_write("TODO");
+}
+
+void th_rev_multiple(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    
+}
+
+void th_add_single(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    client_kv();
+    db_add_single(handler->single,kv);
+}
+
+void th_fwd_single(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    
+}
+
+void th_rev_single(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    
+}
+
+void th_opener(handler * handler, tcp_event_connection_state * state, char * message)
+{
+    clause_config clause_config = { .separator_list = " " };
+    clause clause;
+    delimit_clause(&clause,&clause_config,message);
+
+    if( 0 == strcmp(clause.subject,"set-multiple") )
+    {
+	handler->think = th_add_multiple;
+	goto MULTIPLE;
+    }
+
+    if( 0 == strcmp(clause.subject,"set-single") )
+    {
+	handler->think = th_add_single;
+	goto SINGLE;
+    }
+
+    if( 0 == strcmp(clause.subject,"fwd-multiple") )
+    {
+	handler->think = th_fwd_multiple;
+	goto MULTIPLE;
+    }
+
+    if( 0 == strcmp(clause.subject,"get-single") )
+    {
+	handler->think = th_fwd_single;
+	goto SINGLE;
+    }
+
+    printf("Unknown command '%s'",clause.subject);
+
+    goto ERROR;
+
+SINGLE:
+    if( -1 == db_load_single(&handler->single,clause.predicate) )
+    {
+	print_error("Failed loading single database at '%s'",clause.predicate);
+	goto ERROR;
+    }
+    
+MULTIPLE:
+    if( -1 == db_load_multiple(&handler->multiple,clause.predicate) )
+    {
+	print_error("Failed loading multiple database at '%s'",clause.predicate);
+	goto ERROR;
+    }
+    
+ERROR:
+    state->disconnect = true;
+    return;
+}
+
+static void cb_connect(tcp_event_connection_state * state)
+{
+    *array_push(&state->read.term_bytes) = '\n';
+    state->custom.client = malloc(sizeof(handler));    
+    handler * set = state->custom.client;
+    *set = (handler){ .think = th_opener };
+}
 
 static void terminate(char_array * array)
 {
     for_range(byte,*array)
     {
-	if(!*byte)
+	if(*byte == '\0')
 	    return;
 	
 	if(*byte == '\n')
@@ -52,203 +159,15 @@ static void terminate(char_array * array)
     *array_push(array) = '\0';
 }
 
-static void cb_connect(tcp_event_connection_state * state)
-{
-    *array_push(&state->read.term_bytes) = '\n';
-    state->custom.client = malloc(sizeof(handler));
-    memset(state->custom.client,0,sizeof(handler));
-}
-
-static int connection_init(handler * handler, char * message)
-{
-    
-    char *subject, *predicate;
-    subject = message;
-    predicate = strchr(subject,' ');
-    if( NULL == predicate )
-    {
-	print_error("Failed to parse request '%s'",message);
-	return -1;
-    }
-
-    *predicate = '\0';
-    predicate++;
-	
-    if( 0 == strcmp(subject,"set-multiple") )
-    {
-	if( -1 == db_load_multiple(&handler->multiple,predicate) )
-	{
-	    print_error("Failed to load multiple database for '%s %s'",subject,predicate);
-	    return -1;
-	}
-	    
-	handler->state = SET_MULTIPLE;
-    }
-    else if( 0 == strcmp(subject,"set-single") )
-    {
-	if( -1 == db_load_single(&handler->single,predicate) )
-	{
-	    print_error("Failed to load single database for '%s %s'",subject,predicate);
-	    return -1;
-	}
-    }
-    else if( 0 == strcmp(subject,"get-multiple") )
-    {
-	if( -1 == db_load_multiple(&handler->multiple,predicate) )
-	{
-	    print_error("Failed to load multiple database for '%s %s'",subject,predicate);
-	    return -1;
-	}
-
-	handler->state = FWD_MULTIPLE;
-    }
-    else if( 0 == strcmp(subject,"get-single") )
-    {
-	
-	if( -1 == db_load_single(&handler->single,predicate) )
-	{
-	    print_error("Failed to load single database for '%s %s'",subject,predicate);
-	    return -1;
-	}
-	
-	handler->state = FWD_SINGLE;
-    }
-    else
-    {
-	print_error("Unknown opener '%s %s'\n",subject,predicate);
-	return -1;
-    }
-
-    return 0;
-}
-
-static int set_single(table * table, handler * handler, char * message)
-{
-    size_t message_index;
-    if( '\0' == *message )
-    {
-	handler->key = 0;
-	handler->full = false;
-	return 0;
-    }
-
-    if(handler->full)
-    {
-	print_error("Excess element in pair, '%s'",message);
-	return -1;
-    }
-
-    message_index = table_include(table,message);
-	
-    if(handler->key == 0)
-    {
-	handler->key = message_index;
-    }
-    else if(!handler->full)
-    {
-	db_add_single(handler->single,handler->key,message_index);
-	handler->full = true;
-    }
-
-    return 0;
-}
-
-static int set_multiple(table * table, handler * handler, char * message)
-{
-    if( '\0' == *message )
-    {
-	handler->key = 0;
-	return 0;
-    }
-
-    size_t message_index = table_include(table,message);
-
-    if( 0 == handler->key )
-    {
-	handler->key = message_index;
-	return 0;
-    }
-
-    db_add_multiple(handler->multiple,handler->key,message_index);
-
-    return 0;
-}
-
 static void cb_finished_read(tcp_event_connection_state * state)
 {
     handler * handler = state->custom.client;
-    table * table = state->custom.server;
-    
+
     terminate(&state->read.bytes);
-    char *message = state->read.bytes.begin;
 
-    size_t key;
-    size_t value;
-    const char * name;
-    index_array * array;
+    printf("MESSAGE: %s\n",state->read.bytes.begin);
     
-    switch(handler->state)
-    {
-    case NO_TYPE:
-	if( -1 == connection_init(handler,message) )
-	    goto ERROR;
-	return;
-
-    case SET_SINGLE:
-	if( -1 == set_single(table,handler,message) )
-	    goto ERROR;
-	return;
-
-    case SET_MULTIPLE:
-	if( -1 == set_multiple(table,handler,message) )
-	    goto ERROR;
-	return;
-
-    case FWD_SINGLE:
-	key = table_include(table,message);
-	value = *dictionary_access_key(&handler->single->forward,(void*)key);
-	name = table_keyof_index(table,value);
-	print_array_append(&state->write.bytes,"%s  %s\n",message,name);
-	state->write.active = true;
-	return;
-	
-    case FWD_MULTIPLE:
-	key = table_include(table,message);
-	array = dictionary_access_key(&handler->multiple->forward,(void*)key);
-	for_range(i,*array)
-	{
-	    name = table_keyof_index(table,*i);
-	    print_array_append(&state->write.bytes,"%s  %s\n",message,name);
-	}
-	state->write.active = true;
-	return;
-
-    case REV_SINGLE:
-	value = table_include(table,message);
-	key = *dictionary_access_key(&handler->single->reverse,(void*)value);
-	name = table_keyof_index(table,key);
-	print_array_append(&state->write.bytes,"%s  %s\n",name,message);
-	state->write.active = true;
-	return;
-	
-    case REV_MULTIPLE:
-	value = table_include(table,message);
-	key = *dictionary_access_key(&handler->multiple->reverse,(void*)value);
-	name = table_keyof_index(table,key);
-	print_array_append(&state->write.bytes,"%s  %s\n",name,message);
-	state->write.active = true;
-	return;
-	
-    default:
-	print_error("Unknown value in switch");
-	goto ERROR;
-    }
-
-    printf("Missed switch");
-    
-ERROR:
-    state->disconnect = true;
-    return;
+    handler->think(handler,state,state->read.bytes.begin);
 }
 
 static void cb_finished_write(tcp_event_connection_state * state)
@@ -264,7 +183,6 @@ int network_listen()
 {
     tcp_event_config event_config =
 	{
-	    .custom = get_string_table(),
 	    .connect = cb_connect,
 	    .finished_read = cb_finished_read,
 	    .finished_write = cb_finished_write,
