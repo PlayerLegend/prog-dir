@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
     case OP_AND:
 	operation_and(streams);
 	return 0;
-    case OP_NOT:
+    case OP_NOT: // subsequent sets remove elements from the first
 	operation_not(streams);
 	return 0;
     default:

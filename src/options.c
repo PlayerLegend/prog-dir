@@ -20,6 +20,8 @@
 #include "print.h"
 #include "print_array.h"
 
+#include <assert.h>
+
 void options_init(option_db * db)
 {
     *db = (option_db){ 0 };
@@ -294,4 +296,31 @@ char * find_config(const config_location * find)
     }
 
     return output.begin;
+}
+
+const char * get_option_string(option_db * db, const char * name)
+{
+    option_entry * entry = dictionary_access_key(db,name);
+
+    assert(entry->state == OPTION_STRING);
+
+    return entry->strval;
+}
+
+float get_option_float(option_db * db, const char * name)
+{
+    option_entry * entry = dictionary_access_key(db,name);
+
+    assert(entry->state == OPTION_FLOAT);
+
+    return entry->floatval;
+}
+
+bool get_option_bool(option_db * db, const char * name)
+{
+    option_entry * entry = dictionary_access_key(db,name);
+
+    assert(entry->state == OPTION_BOOL);
+
+    return entry->boolval;
 }

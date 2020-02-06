@@ -1,5 +1,12 @@
 #ifndef FLAT_INCLUDES
+#define FLAT_INCLUDES
+
+#include <stdio.h>
+#include <string.h>
+
+#include "stack.h"
 #include "array.h"
+
 #endif
 
 typedef struct

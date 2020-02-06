@@ -19,9 +19,16 @@ typedef queue(char) char_queue;
 void * _queue_pop(char_queue * queue, size_t element_size);
 void * _queue_push(char_queue * queue, size_t element_size);
 
-#define queue_pop(qp)				\
+#define queue_pop(qp)							\
     ( (typeof((qp)->list[0].begin)) _queue_pop( (char_queue*)(qp) , sizeof(*(qp)->list[0].begin) ) )
 
-#define queue_push(qp)				\
+#define queue_push(qp)							\
     ( (typeof((qp)->list[0].begin)) _queue_push( (char_queue*)(qp) , sizeof(*(qp)->list[0].begin) ) )
 
+#define queue_clear(qp)				\
+    {						\
+	free((qp)->list[0].begin);		\
+	free((qp)->list[1].begin);		\
+	array_forget(&(qp)->list[0]);		\
+	array_forget(&(qp)->list[1]);		\
+    }

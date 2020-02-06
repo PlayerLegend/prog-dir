@@ -1,4 +1,7 @@
+#ifndef FLAT_INCLUDES
+#define FLAT_INCLUDES
 #include <stdio.h>
+#endif
 
 int tcp_host(const char * service);
 int udp_host(const char * service);

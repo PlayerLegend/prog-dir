@@ -4,7 +4,7 @@
 #endif
 
 #define index_map(type)				\
-    struct { type * begin; type * alloc; }
+    struct { type * begin; union { type * alloc; type * end; }; }
 
 typedef index_map(char) index_map_char;
 

@@ -12,5 +12,5 @@ void table_free_string(void * key);
 	.gen_digest = table_digest_string,	\
 	    .copy = table_copy_string,		\
 	    .equals = table_equals_string,	\
-	    .free = table_free_string		\
+	    .free = table_free_string,		\
 	    }

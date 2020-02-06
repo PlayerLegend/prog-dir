@@ -43,5 +43,9 @@ char ** set_option_string(option_db * db, const char * name);
 float * set_option_float(option_db * db, const char * name);
 bool * set_option_bool(option_db * db, const char * name);
 
+const char * get_option_string(option_db * db, const char * name);
+float get_option_float(option_db * db, const char * name);
+bool get_option_bool(option_db * db, const char * name);
+
 int set_option_clause(option_db * db, const clause * clause);
 int load_options_file(option_db * db, FILE * file);

@@ -1,8 +1,11 @@
 #ifndef FLAT_INCLUDES
 #define FLAT_INCLUDES
+
 #include <stdio.h>
-#include "stack.h"
 #include <string.h>
+
+#include "stack.h"
+
 #endif
 
 #define array(type)				\

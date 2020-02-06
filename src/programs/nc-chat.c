@@ -208,33 +208,30 @@ bool login_user(tcp_event_connection_state * state)
     return false;  
 }
 
-bool cb_connect(tcp_event_connection_state * client)
+void cb_connect(tcp_event_connection_state * client)
 {
     login_user(client);
-    return true;
 }
 
-bool cb_finished_read(tcp_event_connection_state * state)
+void cb_finished_read(tcp_event_connection_state * state)
 {
     terminate(&state->read.bytes);
     if(!login_user(state))
-	return true;
+	return;
     
     connection_custom * login = state->custom.client;
     user_info * user = login->user;
     const char * username = dictionary_keyof_value(&user_db,user);
 
     message_everyone("SAY: %s: %s\n",username,state->read.bytes.begin);
-    
-    return true;
 }
 
-bool cb_finished_write(tcp_event_connection_state * state)
+void cb_finished_write(tcp_event_connection_state * state)
 {
     connection_custom * login = state->custom.client;
 
     if(!login || login->state != CONNECTION_LOGGED_IN)
-	return true;
+	return;
     
     user_info * user = login->user;
 
@@ -250,8 +247,6 @@ bool cb_finished_write(tcp_event_connection_state * state)
 
 	state->write.active = true;
     }
-    
-    return true;
 }
 
 void cb_disconnect(tcp_event_connection_state * state)

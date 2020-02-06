@@ -1,9 +1,9 @@
 #ifndef FLAT_INCLUDES
 #define FLAT_INCLUDES
 #include <stdio.h>
+#include <stdbool.h>
 #include "stack.h"
 #include "array.h"
-#include <stdbool.h>
 #endif
 
 typedef struct {
@@ -26,15 +26,18 @@ typedef struct {
 	char_array bytes;
     }
 	write;
+
+    bool disconnect;
+    bool halt_server;
 }
     tcp_event_connection_state;
 
 typedef struct {
     void * custom;
     bool keepalive;
-    bool (*connect)(tcp_event_connection_state * state);
-    bool (*finished_read)(tcp_event_connection_state * state);
-    bool (*finished_write)(tcp_event_connection_state * state);
+    void (*connect)(tcp_event_connection_state * state);
+    void (*finished_read)(tcp_event_connection_state * state);
+    void (*finished_write)(tcp_event_connection_state * state);
     void (*disconnect)(tcp_event_connection_state * state);
 }
     tcp_event_config;

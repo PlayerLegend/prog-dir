@@ -101,7 +101,13 @@ static void halt_server(connection_handler * handler)
 
 static void apply_state_changes(connection_handler * handler)
 {
-    if(!handler->state.write.active && !handler->state.read.active)
+    if(handler->state.halt_server)
+    {
+	halt_server(handler);
+	return;
+    }
+    
+    if(handler->state.disconnect)
     {
 	destroy_connection_handler(handler);
 	return;
@@ -138,12 +144,7 @@ static void finish_write(struct ev_loop * loop, connection_handler * handler)
     handler->state.write.active = false;
     handler->write_point = 0;
     array_rewrite(&handler->state.write.bytes);
-    if(!handler->config->finished_write(&handler->state))
-    {
-	halt_server(handler);
-	return;
-    }
-    
+    handler->config->finished_write(&handler->state);    
     apply_state_changes(handler);
 }
 
@@ -223,11 +224,7 @@ static void read_callback(struct ev_loop * loop, ev_io * watch, int recieved_eve
 			    finished,
 			    count);
 	finished += count;
-	if(!handler->config->finished_read(&handler->state))
-	{
-	    halt_server(handler);
-	    return;
-	}
+	handler->config->finished_read(&handler->state);
 	apply_state_changes(handler);
     }
 
@@ -239,11 +236,7 @@ static void read_callback(struct ev_loop * loop, ev_io * watch, int recieved_eve
 			    count);
 	finished += count;
 	
-	if(!handler->config->finished_read(&handler->state))
-	{
-	    halt_server(handler);
-	    return;
-	}
+	handler->config->finished_read(&handler->state);
 	apply_state_changes(handler);
     }
 
@@ -265,14 +258,17 @@ static void create_connection_handler(int connection_fd, struct ev_loop * loop, 
 	.state.custom.server = config->custom,
     };
 
-    ev_io_init(&handler->write.watch,write_callback,connection_fd,EV_WRITE);
-    ev_io_init(&handler->read.watch,read_callback,connection_fd,EV_READ);
+    ev_io_init(&handler->write.watch,
+	       write_callback,
+	       connection_fd,
+	       EV_WRITE);
+    
+    ev_io_init(&handler->read.watch,
+	       read_callback,
+	       connection_fd,
+	       EV_READ);
 
-    if(!config->connect(&handler->state))
-    {
-	halt_server(handler);
-    }
-
+    config->connect(&handler->state);
     apply_state_changes(handler);
 }
 

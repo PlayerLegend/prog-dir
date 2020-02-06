@@ -50,7 +50,7 @@ WAIT:
     printf("thread %p runs job %p\n",handler,job);
     
     job->exit = job->callback(job,pool->global);
-    job->done = true;
+    job->state = JOB_DONE;
     sem_post(&job->wait);
 
     goto WAIT;
@@ -126,10 +126,28 @@ void thread_pool_init(thread_pool *pool, void *global)
 
 void thread_job_start(thread_pool *pool,thread_job *job)
 {
-    job->done = false;
+    job->state = JOB_INCOMPLETE;
     sem_init(&job->wait,0,0);
     pthread_mutex_lock(&pool->lock);
     *queue_push(&pool->jobs) = job;
     pthread_mutex_unlock(&pool->lock);
     sem_post(&pool->job_wait);
+}
+
+void thread_pool_destroy(thread_pool *pool)
+{
+    thread_pool_set(pool,0);
+    pthread_mutex_destroy(&pool->lock);
+    sem_destroy(&pool->job_wait);
+    sem_destroy(&pool->halt_wait);
+
+    thread_job * job;
+
+    while( (job = *queue_pop(&pool->jobs)) )
+    {
+	job->state = JOB_CANCELLED;
+	sem_post(&job->wait);
+    }
+
+    queue_clear(&pool->jobs);
 }

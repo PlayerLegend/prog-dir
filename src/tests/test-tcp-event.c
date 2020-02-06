@@ -4,15 +4,15 @@
 #include <stdlib.h>
 #include <assert.h>
 
-bool cb_connect(tcp_event_connection_state * client)
+void cb_connect(tcp_event_connection_state * client)
 {
     printf("client connected\n");
     *array_push(&client->read.term_bytes) = ';';
     client->read.term_size = 7;
-    return true;
+    return;
 }
 
-bool cb_finished_read(tcp_event_connection_state * client)
+void cb_finished_read(tcp_event_connection_state * client)
 {
     printf("client said: '%.*s'\n",
 	   (int)(client->read.bytes.end - client->read.bytes.begin),
@@ -21,17 +21,14 @@ bool cb_finished_read(tcp_event_connection_state * client)
     char append[] = "asdf\n";
     array_append_several(&client->write.bytes,append,6);
     client->write.active = true;
-    
-    return true;
 }
 
-bool cb_finished_write(tcp_event_connection_state * client)
+void cb_finished_write(tcp_event_connection_state * client)
 {
     printf("server sent: '%.*s'\n",
 	   (int)(client->write.bytes.end - client->write.bytes.begin),
 	   client->write.bytes.begin);
     array_rewrite(&client->write.bytes);
-    return true;
 }
 
 void cb_disconnect(tcp_event_connection_state * client)
