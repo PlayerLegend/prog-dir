@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "stack.h"
 #include "array.h"
@@ -14,9 +15,9 @@
 #include "hash_table_string.h"
 #include "dictionary.h"
 #include "range.h"
-#include "nc-db/database.h"
 #include "print.h"
 #include "delimit.h"
+#include "nc-db/database.h"
 
 typedef struct {
     ino_t inode;
@@ -82,22 +83,6 @@ static void terminate(char * text)
     *text = '\0';
 }
 
-static int get_file_uid_size(file_uid * uid, size_t * size, const char * path)
-{
-    struct stat s;
-    if( -1 == stat(path,&s) )
-    {
-	perror(path);
-	return -1;
-    }
-
-    uid->inode = s.st_ino;
-    uid->device = s.st_dev;
-    *size = s.st_size;
-
-    return 0;
-}
-
 static void clean_db()
 {
     
@@ -105,6 +90,7 @@ static void clean_db()
 
 int init_db()
 {
+    memset(&static_var,0,sizeof(static_var));
     dictionary_config(&static_var.loaded_db) = TABLE_CONFIG_FILE_UID;
     static_var.string_table.config = TABLE_CONFIG_STRING;
     atexit(clean_db);
@@ -220,16 +206,33 @@ static int init_path(const char * file_name, const char * line)
     return 0;
 }
 
+static int get_file_uid_size(file_uid * uid, size_t * size, const char * path)
+{
+    struct stat s;
+    if( -1 == stat(path,&s) )
+    {
+	perror(path);
+	return -1;
+    }
+
+    uid->inode = s.st_ino;
+    uid->device = s.st_dev;
+    *size = s.st_size;
+
+    return 0;
+}
+
 static int find_db(loaded_db_entry ** entry, const char * file_name, bool is_single, const char * header)
 {
     file_uid uid;
     size_t file_size;
-    if( -1 == get_file_uid_size(&uid,&file_size,file_name) &&
-	-1 == init_path(file_name,header) &&
-	-1 == get_file_uid_size(&uid,&file_size,file_name) )
-	return -1;
-
-    if( 0 == file_size && -1 == init_path(file_name,header) )
+    
+    if( -1 == get_file_uid_size(&uid,&file_size,file_name) )
+    {
+	if( -1 == init_path(file_name,header) || -1 == get_file_uid_size(&uid,&file_size,file_name) )
+	    return -1;
+    }
+    else if( 0 == file_size && -1 == init_path(file_name,header) )
 	return -1;
     
     *entry = dictionary_access_key(&static_var.loaded_db,&uid);
@@ -275,7 +278,7 @@ static FILE * open_database(const char * file_name, const char * header)
 
     if( 0 != strcmp(line.text,header) )
     {
-	print_error("Incorrect database type, needed '%s', got '%s'\n",header,line.text);
+	print_error("Incorrect database type at '%s', needed '%s', got '%s'\n",file_name,header,line.text);
 	free(line.text);
 	fclose(file);
 	return NULL;
@@ -385,6 +388,9 @@ ERROR:
 
 int db_make_kv(key_value * kv, char * line)
 {
+    assert(NULL != line);
+    assert(NULL != kv);
+    
     clause_config clause_config =
 	{
 	    .separator_list = " ",
@@ -408,4 +414,9 @@ int db_make_kv(key_value * kv, char * line)
     };
 
     return 0;
+}
+
+size_t db_index_string(const char * string)
+{
+    return table_include(&static_var.string_table,string);
 }

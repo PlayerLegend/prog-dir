@@ -121,6 +121,8 @@ SINGLE:
 	print_error("Failed loading single database at '%s'",clause.predicate);
 	goto ERROR;
     }
+
+    return;
     
 MULTIPLE:
     if( -1 == db_load_multiple(&handler->multiple,clause.predicate) )
@@ -128,6 +130,8 @@ MULTIPLE:
 	print_error("Failed loading multiple database at '%s'",clause.predicate);
 	goto ERROR;
     }
+
+    return;
     
 ERROR:
     state->disconnect = true;

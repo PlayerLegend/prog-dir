@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if ! cd "$(dirname "$(realpath "$0")")"
+then
+    exit 1
+fi
+
 if test "$(basename "$0")" = exec-interactive.sh
 then
     export interactive=true

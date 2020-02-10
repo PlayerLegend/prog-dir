@@ -78,7 +78,7 @@ do
     if test "$ans" = y
     then
 	cp -v "$tmp" "$stub_name"
-	ln -vrs "$stub_name" enabled/
+#	ln -vrs "$stub_name" enabled/
 	break
     elif test "$ans" = n
     then

@@ -12,3 +12,6 @@
 
 #define count_range(object)			\
     ((object).end - (object).begin)
+
+#define range(type)				\
+    struct { type *begin, *end; }

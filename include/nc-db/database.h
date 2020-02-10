@@ -37,6 +37,7 @@ typedef struct {
 
 int init_db();
 
+size_t db_index_string(const char * string);
 int db_make_kv(key_value * kv, char * line);
 void db_add_single(db_single * db, key_value kv);
 void db_delete_single(db_single * db, key_value kv);
@@ -46,9 +47,8 @@ void db_add_multiple(db_multiple * db, key_value kv);
 void db_delete_multiple(db_multiple * db, key_value kv);
 int db_load_multiple(db_multiple ** db, const char * file_name);
 
-
 #define db_lookup_forward(db_ptr,key)		\
-    dictionary_access_key(&(db_ptr)->forward,(void*)table_include(&(db_ptr)->table,(key)))
+    (*dictionary_access_key(&(db_ptr)->forward,(void*)(key)))
 
 #define db_lookup_reverse(db_ptr,key)					\
-    dictionary_access_key(&(db_ptr)->forward,(void*)table_include(&(db_ptr)->table,(key)))
+    (*dictionary_access_key(&(db_ptr)->reverse,(void*)(key)))
