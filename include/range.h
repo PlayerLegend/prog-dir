@@ -10,8 +10,13 @@
 #define is_range_empty(object)			\
     ((object).begin == (object).end)
 
+#define pointer_index(object,pointer)		\
+    ( (pointer) - (object).begin )
+
 #define count_range(object)			\
     ((object).end - (object).begin)
 
 #define range(type)				\
     struct { type *begin, *end; }
+
+typedef range(char) char_range;

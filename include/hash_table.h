@@ -62,3 +62,9 @@ void table_clear(table * clear);
 #define table_keycount(tablep)	\
     ((tablep)->key.end - (tablep)->key.begin)
 
+
+inline static void * table_make_key(table * table, void * from)
+{
+    size_t index = table_include(table,from);
+    return table_keyof_index(table,index);
+}

@@ -19,10 +19,7 @@
 #include "nc-db/configuration.h"
 
 typedef struct handler {
-    union {
-	db_single * single;
-	db_multiple * multiple;
-    };
+    db_handle handle;
     void (*think)(struct handler * handler, tcp_event_connection_state * state, char * message);
 }
     handler;
@@ -34,106 +31,71 @@ typedef struct handler {
 	return;					\
     }
 
-#define client_write(fmt,...)		\
-    {						\
-	print_array_append(&state->write.bytes,fmt "\n",##__VA_ARGS__);	\
-	state->write.active = true;					\
-    }
-
-
-#define client_kv()				\
-    key_value kv;				\
-    if( -1 == db_make_kv(&kv,message) )		\
-    {						\
-	state->disconnect = true;		\
-	return;					\
-    }
-
-void th_add_multiple(handler * handler, tcp_event_connection_state * state, char * message)
+void th_add(handler * handler, tcp_event_connection_state * state, char * message)
 {
-    client_kv();
-    db_add_multiple(handler->multiple,kv);
+    if( -1 == db_add(handler->handle,message) )
+	client_error("Failed to add '%s'\n",message);
 }
 
-void th_fwd_multiple(handler * handler, tcp_event_connection_state * state, char * message)
+void th_delete(handler * handler, tcp_event_connection_state * state, char * message)
 {
-    client_write("TODO");
+    if( -1 == db_delete(handler->handle,message) )
+	client_error("Failed to delete '%s'\n",message);
 }
 
-void th_rev_multiple(handler * handler, tcp_event_connection_state * state, char * message)
+void th_get_values(handler * handler, tcp_event_connection_state * state, char * message)
 {
-    
+    db_get_values(&state->write.bytes,handler->handle,message);
+    state->write.active = true;
 }
 
-void th_add_single(handler * handler, tcp_event_connection_state * state, char * message)
+void th_get_keys(handler * handler, tcp_event_connection_state * state, char * message)
 {
-    client_kv();
-    db_add_single(handler->single,kv);
-}
-
-void th_fwd_single(handler * handler, tcp_event_connection_state * state, char * message)
-{
-    
-}
-
-void th_rev_single(handler * handler, tcp_event_connection_state * state, char * message)
-{
-    
+    db_get_keys(&state->write.bytes,handler->handle,message);
+    state->write.active = true;
 }
 
 void th_opener(handler * handler, tcp_event_connection_state * state, char * message)
 {
+    if( 0 == strcmp(message,"quit") )
+    {
+	state->halt_server = true;
+	return;
+    }
+    
     clause_config clause_config = { .separator_list = " " };
     clause clause;
+
     delimit_clause(&clause,&clause_config,message);
 
-    if( 0 == strcmp(clause.subject,"set-multiple") )
+    if( -1 == db_load(&handler->handle,clause.predicate) )
+	client_error("Failed to open '%s'\n",clause.predicate);
+    
+    if( 0 == strcmp(clause.subject,"add") )
     {
-	handler->think = th_add_multiple;
-	goto MULTIPLE;
+	handler->think = th_add;
+	return;
     }
-
-    if( 0 == strcmp(clause.subject,"set-single") )
+    
+    if( 0 == strcmp(clause.subject,"delete") )
     {
-	handler->think = th_add_single;
-	goto SINGLE;
+	handler->think = th_delete;
+	return;
     }
-
-    if( 0 == strcmp(clause.subject,"fwd-multiple") )
+    
+    if( 0 == strcmp(clause.subject,"get-keys") )
     {
-	handler->think = th_fwd_multiple;
-	goto MULTIPLE;
+	handler->think = th_get_keys;
+	return;
     }
-
-    if( 0 == strcmp(clause.subject,"get-single") )
+    
+    if( 0 == strcmp(clause.subject,"get-values") )
     {
-	handler->think = th_fwd_single;
-	goto SINGLE;
+	handler->think = th_get_values;
+	return;
     }
-
+    
     printf("Unknown command '%s'",clause.subject);
-
-    goto ERROR;
-
-SINGLE:
-    if( -1 == db_load_single(&handler->single,clause.predicate) )
-    {
-	print_error("Failed loading single database at '%s'",clause.predicate);
-	goto ERROR;
-    }
-
-    return;
-    
-MULTIPLE:
-    if( -1 == db_load_multiple(&handler->multiple,clause.predicate) )
-    {
-	print_error("Failed loading multiple database at '%s'",clause.predicate);
-	goto ERROR;
-    }
-
-    return;
-    
-ERROR:
     state->disconnect = true;
     return;
 }
@@ -168,19 +130,21 @@ static void cb_finished_read(tcp_event_connection_state * state)
     handler * handler = state->custom.client;
 
     terminate(&state->read.bytes);
-
-    printf("MESSAGE: %s\n",state->read.bytes.begin);
     
     handler->think(handler,state,state->read.bytes.begin);
 }
 
 static void cb_finished_write(tcp_event_connection_state * state)
 {
-    
 }
 
 static void cb_disconnect(tcp_event_connection_state * state)
 {
+    handler * handler = state->custom.client;
+    
+    db_dump(handler->handle);
+
+    printf("Disconnected client\n");
 }
 
 int network_listen()

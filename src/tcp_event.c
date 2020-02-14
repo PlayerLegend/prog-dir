@@ -10,30 +10,33 @@
 #include "range.h"
 #include <assert.h>
 #include <stddef.h>
-
-struct io_state;
+#include <pthread.h>
 
 typedef struct {
-    struct io_state {
-	ev_io watch;
-	bool active;
-    }
-	write, read;
+    ev_io watch;
+    const tcp_event_config * config;
+    bool server_halting;
+    size_t client_count;
+    pthread_mutex_t lock;
+}
+    listen_handler;
+
+typedef struct {
+    ev_io watch;
+    bool active;
+}
+    io_state;
+	
+typedef struct {
+    io_state write, read;
     char_array read_bytes;
     size_t write_point;
     tcp_event_connection_state state;
     const tcp_event_config * config;
     struct ev_loop * loop;
+    listen_handler * listener;
 }
     connection_handler;
-
-typedef struct {
-    ev_io watch;
-    const tcp_event_config * config;
-}
-    listen_pair;
-
-typedef struct io_state io_state;
 
 #define recall_state_from_write_watch(ptr)		\
     ((connection_handler*)((char*)(ptr) - offsetof(connection_handler,write.watch)))
@@ -100,15 +103,29 @@ static void destroy_connection_handler(connection_handler * handler)
 
 static void halt_server(connection_handler * handler)
 {
-    exit(1); // get rid of this
+    pthread_mutex_lock(&handler->listener->lock);
+    if(!handler->listener->server_halting)
+    {
+	printf("Halting server\n");
+	handler->listener->server_halting = true;
+	close(handler->listener->watch.fd);
+	ev_io_stop(handler->loop,&handler->listener->watch);
+    }
+    
+    pthread_mutex_unlock(&handler->listener->lock);
 }
 
 static bool apply_state_changes(connection_handler * handler)
 {
+    pthread_mutex_lock(&handler->listener->lock);
+    if(handler->listener->server_halting)
+	handler->state.disconnect = true;
+    pthread_mutex_unlock(&handler->listener->lock);
+        
     if(handler->state.halt_server)
     {
 	halt_server(handler);
-	return false;
+	handler->state.disconnect = true;
     }
     
     if(handler->state.disconnect)
@@ -257,15 +274,16 @@ static void read_callback(struct ev_loop * loop, ev_io * watch, int recieved_eve
     }
 }
 
-static void create_connection_handler(int connection_fd, struct ev_loop * loop, const tcp_event_config * config)
+static void create_connection_handler(int connection_fd, struct ev_loop * loop, listen_handler * listen)
 {
     connection_handler * handler = malloc(sizeof(*handler));
     *handler = (connection_handler)
     {
 	.loop = loop,
-	.config = config,
+	.config = listen->config,
 	.state.read.active = true,
-	.state.custom.server = config->custom,
+	.state.custom.server = listen->config->custom,
+	.listener = listen,
     };
 
     ev_io_init(&handler->write.watch,
@@ -278,16 +296,17 @@ static void create_connection_handler(int connection_fd, struct ev_loop * loop, 
 	       connection_fd,
 	       EV_READ);
 
-    config->connect(&handler->state);
+    listen->config->connect(&handler->state);
     apply_state_changes(handler);
 }
 
 void listen_callback(struct ev_loop * loop, ev_io * watch, int recieved_events)
 {
-    listen_pair * listen_pair = (void*)watch;
+    listen_handler * listen_handler = (void*)watch;
     
     if(recieved_events & EV_READ)
     {
+	pthread_mutex_lock(&listen_handler->lock);
 	int client_fd = tcp_listen(watch->fd);
 	
 	if( -1 == fcntl(client_fd,F_SETFL,fcntl(client_fd,F_GETFL) | O_NONBLOCK) )
@@ -297,7 +316,7 @@ void listen_callback(struct ev_loop * loop, ev_io * watch, int recieved_events)
 	    return;
 	}
 
-	if(listen_pair->config->keepalive)
+	if(listen_handler->config->keepalive)
 	{
 	    int setsockopt_true = 1;
 	    
@@ -309,11 +328,14 @@ void listen_callback(struct ev_loop * loop, ev_io * watch, int recieved_events)
 	    {
 		perror("setsockopt");
 		close(client_fd);
+		pthread_mutex_unlock(&listen_handler->lock);
 		return;
 	    }
 	}
 
-	create_connection_handler(client_fd,loop,listen_pair->config);
+	listen_handler->client_count++;
+	create_connection_handler(client_fd,loop,listen_handler);
+	pthread_mutex_unlock(&listen_handler->lock);
     }
 }
 
@@ -328,9 +350,11 @@ int tcp_event_listen(const char * service, const tcp_event_config * config)
 
     struct ev_loop * loop = ev_loop_new(EVFLAG_AUTO);
 
-    listen_pair listen_pair = { .config = config };
-    ev_io_init(&listen_pair.watch,listen_callback,listen_fd,EV_READ);
-    ev_io_start(loop,&listen_pair.watch);
+    listen_handler listen_handler = { .config = config };
+    pthread_mutex_init(&listen_handler.lock,NULL);
+
+    ev_io_init(&listen_handler.watch,listen_callback,listen_fd,EV_READ);
+    ev_io_start(loop,&listen_handler.watch);
 
     ev_run(loop,0);
 

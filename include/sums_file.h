@@ -1,18 +1,27 @@
 #ifndef FLAT_INCLUDES
+#define FLAT_INCLUDES
+
+#include <stdio.h>
+#include <string.h>
+
+#include "stack.h"
+#include "array.h"
+#include "index_map.h"
+#include "hash_table.h"
+#include "hash_table_string.h"
 #include "dictionary.h"
+
 #endif
 
-typedef struct
-{
-    table sums, names;
+typedef struct {
+    string_array key;
+    string_array value;
 }
-    sums_relation; // dict value for any table key, only one table for everything
+    sums_entry;
 
-typedef dictionary(sums_relation) sums_db;
+typedef dictionary(sums_entry) sums_db;
 
-void sums_db_init(sums_db * init);
-void sums_db_add(sums_db * addto, const char * sum, const char * name);
-void sums_db_del_line(sums_db * delfrom, const char * sum, const char * name);
-void sums_db_del_sum(sums_db * delfrom, const char * sum);
-void sums_db_del_name(sums_db * delfrom, const char * name);
-int sums_file_load(sums_db * load, FILE * file);
+int sums_load(sums_db * db, FILE * file);
+int sums_add(sums_db * db, char * line);
+int sums_delete(sums_db * db, char * line);
+int sums_dump(FILE * file, sums_db * db);

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "stack.h"
 #include "array.h"
@@ -32,36 +33,19 @@ int init_config(int argc, char * argv[])
     
     set_defaults();
     
-    config_location loc =
+    int opt;
+
+    while( -1 != (opt = getopt(argc,argv,"f:p:")) )
+	switch(opt)
 	{
-	    .path = ".nc-db.conf",
-	    .argc = argc,
-	    .argv = argv,
-	    .opt_flag = 'f',
-	    .opt_long = "config",
-	};
-
-    char * path = find_config(&loc);
-
-    if(!path)
-    {
-	return 0;
-    }
-
-    FILE * file;
-
-    if( NULL != (file = fopen(path,"r")) )
-    {
-	if( -1 == load_options_file(&options,file) )
-	{
-	    free(path);
-	    fclose(file);
-	    return -1;
+	case 'p':
+	    printf("Set port %s\n",optarg);
+	    *set_option_string(&options,CONFIG_PORT) = dupe_string(optarg);
+	    break;
+	default:
+	    break;
 	}
-    }
 
-    free(path);
-    fclose(file);
     return 0;
 }
 

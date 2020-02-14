@@ -16,13 +16,13 @@ int main(int argc, char * argv[])
 {
     if( -1 == init_config(argc,argv) )
 	return -1;
-    if( -1 == init_db() )
-	return 1;
 
     printf("initialization done, starting network\n");
 
     if( -1 == network_listen() )
+    {
 	return 1;
+    }
 
     return 0;
 }

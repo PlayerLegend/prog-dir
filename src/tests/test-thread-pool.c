@@ -1,50 +1,56 @@
 #define FLAT_INCLUDES
-
 #include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <pthread.h>
-#include <semaphore.h>
-
-#include "stack.h"
-#include "array.h"
-#include "queue.h"
-#include "thread_pool.h"
-
+#include <stdint.h>
 #include <unistd.h>
+#include <assert.h>
 
-int callback(thread_job * job, void * global)
+#include "thread_pool.h"
+#include "job.h"
+
+static void * cb_thread(void * arg)
 {
-    printf("job %p waits\n",job);
-    sleep(1);
-    printf("job %p finishes\n",job);
-    return 0;
+    job_queue * queue = arg;
+
+    printf("Started thread\n");
+
+    while( -1 != job_run(queue) )
+    {
+	printf("ran a job\n");
+    }
+
+    return NULL;
+}
+
+static void * cb_job(void * arg)
+{
+    printf("Sleeping for %zu seconds\n",(uintptr_t)arg);
+    sleep((uintptr_t)arg);
+    printf("Finished after %zu seconds\n",(uintptr_t)arg);
+    return NULL;
 }
 
 int main()
 {
-    const int n = 4 * 4;
-    thread_pool pool;
-    thread_pool_init(&pool,NULL);
-    thread_pool_set(&pool,n / 2);
-    thread_job jobs[n];
-
-    for(int i = 0; i < n; i++)
-    {
-	jobs[i] = (thread_job){ .callback = callback };
-	thread_job_start(&pool,jobs + i);
-    }
+    struct { int seconds, threads, jobs; } count = { 3, 4, 100 };
     
-    for(int i = 0; i < n; i++)
-    {
-	printf("waiting for job %d\n",i + 1);
-	thread_job_wait(jobs + i);
-    }
+    job_queue * queue = job_queue_create();
 
-    printf("halting threads\n");
-    thread_pool_set(&pool,0);
+    for(int i = 0; i < count.jobs; i++)
+	job_forget(queue,cb_job,(void*)1);
 
-    printf("done\n");
+    thread_pool * pool = thread_pool_spawn(count.threads,cb_thread,queue,(void*)1);
+
+    sleep(count.seconds + 1);
+
+    printf("  === stopping job queue ===\n");
+    
+    job_queue_stop(queue);
+
+    printf("  === attempting to join ===\n");
+
+    assert(NULL == thread_pool_join(pool));
+
+    job_queue_destroy(queue);
 
     return 0;
 }

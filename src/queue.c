@@ -3,12 +3,12 @@
 
 void * _queue_pop(char_queue * queue, size_t element_size)
 {
-    printf("element size %zu, pop %d, index %zu, size %zd + %zd\n",
+    /*printf("element size %zu, pop %d, index %zu, size %zd + %zd\n",
 	   element_size,
 	   queue->pop,
 	   queue->index,
 	   count_range(queue->list[0]) / element_size,
-	   count_range(queue->list[1]) / element_size);
+	   count_range(queue->list[1]) / element_size);*/
     char_array * list = (void*)(queue->list + queue->pop);
     if( (size_t)count_range(*list) <= queue->index * element_size )
     {
@@ -18,7 +18,7 @@ void * _queue_pop(char_queue * queue, size_t element_size)
 	list = (void*)(queue->list + queue->pop);
 	if(is_range_empty(*list))
 	{
-	    printf("queue empty\n");
+	    //printf("queue empty\n");
 	    return NULL;
 	}
     }
@@ -28,6 +28,6 @@ void * _queue_pop(char_queue * queue, size_t element_size)
 
 void * _queue_push(char_queue * queue, size_t element_size)
 {
-    printf("push\n");
+    //printf("push\n");
     return stack_push( (void*)(queue->list + !queue->pop), element_size );    
 }

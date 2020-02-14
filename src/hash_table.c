@@ -10,7 +10,7 @@
 #define GOLDEN_RATIO 1.61803398875
 #define INITIAL_PRIME 27
 #define MAX_KEY_PERCENT 80
-#define MAX_WORST_SKIP_PERCENT 10
+//#define MAX_WORST_SKIP_PERCENT 10
 #define GROW_RATE (GOLDEN_RATIO + 2)
 
 size_t next_size(size_t size)
@@ -94,8 +94,8 @@ table_bucket * _table_find(table * in, const void * key, size_t digest)
 {
     size_t size = in->end - in->begin;
 
-    if( 100 * (size_t)(in->key.end - in->key.begin) >= MAX_KEY_PERCENT * size ||
-	100 * in->worst_skip >= MAX_WORST_SKIP_PERCENT * size )
+    if( 100 * (size_t)(in->key.end - in->key.begin) >= MAX_KEY_PERCENT * size ) //||
+	//100 * in->worst_skip >= MAX_WORST_SKIP_PERCENT * size )
     {
 	table_grow(in);
     }

@@ -24,8 +24,8 @@ typedef struct {
     clause_config;
 
 typedef struct {
-    const char * subject;
-    const char * predicate;
+    char * subject;
+    char * predicate;
 }
     clause;
 

@@ -1,153 +1,129 @@
 #define FLAT_INCLUDES
-#include <stdio.h>
-#include "stack.h"
-#include <string.h>
-#include "array.h"
 #include <stdbool.h>
-#include "queue.h"
 #include <pthread.h>
-#include <semaphore.h>
-#include "thread_pool.h"
-#include "range.h"
 #include <stdlib.h>
-#include "print.h"
+#include <assert.h>
+
+#include "thread_pool.h"
 
 typedef struct {
-    pthread_t thread;
-    thread_pool * pool;
+    int count;
+    thread_pool_callback callback;
+    void * arg;
+    void * error_return;
 }
     thread_handler;
 
-void * pool_thread_func(void * handler_v)
+struct thread_pool {
+    thread_handler handler;
+    pthread_t master;
+};
+
+static void * run_thread(void * arg)
 {
-    thread_handler * handler = handler_v;
-    thread_pool * pool = handler->pool;
-    thread_job * job = NULL;
-    bool should_run = true;
+    thread_handler * handler = arg;
 
-WAIT:
-    sem_wait(&pool->job_wait);
-    pthread_mutex_lock(&pool->lock);
+    assert(NULL != handler);
+    assert(NULL != handler->callback);
 
-    if(pool->size.current > pool->size.want)
+    enum { CHILD_NO, CHILD_YES, CHILD_ERROR } child_state = CHILD_NO;
+    pthread_t child;
+    
+    if(1 < handler->count--)
     {
-	pool->size.current--;
-	should_run = false;
+	if( -1 == pthread_create(&child,NULL,run_thread,arg) )
+	    child_state = CHILD_ERROR;
+	else
+	    child_state = CHILD_YES;
+    }
+
+    void * ret = handler->callback(handler->arg);
+
+    if(child_state == CHILD_YES)
+    {
+	void * child_return = NULL;
+	pthread_join(child,&child_return);
+	return child_return != NULL ? child_return : ret;
+    }
+    else if(child_state == CHILD_ERROR)
+    {
+	return handler->error_return;
     }
     else
     {
-	job = *queue_pop(&pool->jobs);
+	return ret;
     }
-    
-    pthread_mutex_unlock(&pool->lock);
-
-    if(!should_run)
-	goto EXIT;
-    
-    if(!job)
-	goto WAIT;
-
-    printf("thread %p runs job %p\n",handler,job);
-    
-    job->exit = job->callback(job,pool->global);
-    job->state = JOB_DONE;
-    sem_post(&job->wait);
-
-    goto WAIT;
-
-EXIT:
-    pthread_mutex_lock(&pool->lock);
-    *array_push(&pool->halted_threads) = handler->thread;
-    free(handler);
-    pthread_mutex_unlock(&pool->lock);
-
-    sem_post(&pool->halt_wait);
-
-    return NULL;
 }
 
-static int spawn_thread(thread_pool * pool)
+void * thread_pool_run(unsigned int count, thread_pool_callback callback, void * arg, void * error_return)
 {
-    thread_handler * handler = malloc(sizeof(*handler));
-    *handler = (thread_handler){ .pool = pool };
+    thread_handler handler =
+	{
+	    .count = count,
+	    .callback = callback,
+	    .arg = arg,
+	    .error_return = error_return,
+	};
+
+    assert(NULL != callback);
+    assert(NULL != handler.callback);
+    assert(count != 0);
     
-    if( -1 == pthread_create(&handler->thread,NULL,pool_thread_func,handler) )
+    return run_thread(&handler);
+}
+
+thread_pool * thread_pool_spawn(unsigned int count, thread_pool_callback callback, void * arg, void * error_return)
+{
+    thread_pool * ret = malloc(sizeof(*ret));
+    ret->handler = (thread_handler)
+	{
+	    .count = count,
+	    .callback = callback,
+	    .arg = arg,
+	    .error_return = error_return,
+	};
+
+    assert(NULL != callback);
+    assert(NULL != ret->handler.callback);
+    assert(count != 0);
+    
+    if(-1 == pthread_create(&ret->master,NULL,run_thread,&ret->handler))
     {
-	print_error("Failed to spawn a thread");
-	free(handler);
-	return -1;
+	free(ret);
+	return error_return;
     }
 
-    pool->size.current++;
-
-    return 0;
+    return ret;
 }
 
-static void join_thread(thread_pool * pool)
+void * thread_pool_join(thread_pool * pool)
 {
-    pthread_mutex_unlock(&pool->lock);
+    void * ret;
+    pthread_join(pool->master,&ret);
+    free(pool);
+    return ret;
+}
+
+/*void * thread_pool_run(unsigned int count, thread_pool_callback callback, void * arg)
+{
+    pthread_t * threads = malloc(count * sizeof(*threads));
+
+    void * ret = NULL;
+
+    void * thread_ret;
+
+    unsigned int i;
     
-    sem_post(&pool->job_wait);
-    sem_wait(&pool->halt_wait);
-    
-    pthread_mutex_lock(&pool->lock);
-    for_range(thread,pool->halted_threads)
+    for( i = 0; i < count; i++ )
+	pthread_create( threads + i, NULL, callback, arg );
+
+    for( i = 0; i < count; i++ )
     {
-	pthread_join(*thread,NULL);
-    }
-    array_rewrite(&pool->halted_threads);
-}
-
-void thread_pool_set(thread_pool *pool, ssize_t n)
-{
-    pthread_mutex_lock(&pool->lock);
-    pool->size.want = n;
-    while(pool->size.current < pool->size.want)
-    {
-	if( -1 == spawn_thread(pool) )
-	    break;
-    }
-    
-    while(pool->size.current > pool->size.want)
-    {
-	join_thread(pool);
-    }
-    
-    pthread_mutex_unlock(&pool->lock);
-}
-
-void thread_pool_init(thread_pool *pool, void *global)
-{
-    *pool = (thread_pool){ .global = global };
-    pthread_mutex_init(&pool->lock,NULL);
-    sem_init(&pool->job_wait,0,0);
-    sem_init(&pool->halt_wait,0,0);
-}
-
-void thread_job_start(thread_pool *pool,thread_job *job)
-{
-    job->state = JOB_INCOMPLETE;
-    sem_init(&job->wait,0,0);
-    pthread_mutex_lock(&pool->lock);
-    *queue_push(&pool->jobs) = job;
-    pthread_mutex_unlock(&pool->lock);
-    sem_post(&pool->job_wait);
-}
-
-void thread_pool_destroy(thread_pool *pool)
-{
-    thread_pool_set(pool,0);
-    pthread_mutex_destroy(&pool->lock);
-    sem_destroy(&pool->job_wait);
-    sem_destroy(&pool->halt_wait);
-
-    thread_job * job;
-
-    while( (job = *queue_pop(&pool->jobs)) )
-    {
-	job->state = JOB_CANCELLED;
-	sem_post(&job->wait);
+	pthread_join( threads[i], &thread_ret );
+	if(thread_ret)
+	    ret = thread_ret;
     }
 
-    queue_clear(&pool->jobs);
+    return ret;
 }
+*/

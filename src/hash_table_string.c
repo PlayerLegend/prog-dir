@@ -37,7 +37,6 @@ int table_equals_string(const void * a, const void * b)
 
 int table_copy_string(void ** dst, const void * src)
 {
-//    printf("Copying '%s' ... ",(const char*)src->begin);
     char * new = malloc(strlen(src) + 1);
     if(!new)
     {

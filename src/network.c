@@ -1,11 +1,20 @@
+
+#define FLAT_INCLUDES
+#include <stdio.h>
+#include <pthread.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include "print.h"
-#include <pthread.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
+#include <stdlib.h>
+
+#include "print.h"
+#include "range.h"
+#include "stack.h"
+#include "array.h"
+#include "network.h"
 
 static pthread_mutex_t net_lock_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -120,7 +129,7 @@ FILE * tcp_connect_stream(const char * node, const char * service)
     return ret;
 }
 
-static int net_host(char * service, int socktype)
+static int net_host(const char * service, int socktype)
 {
     struct addrinfo * info;
 
@@ -139,12 +148,12 @@ static int net_host(char * service, int socktype)
     return fd;
 }
 
-int tcp_host(char * service)
+int tcp_host(const char * service)
 {
     return net_host(service,SOCK_STREAM);
 }
 
-int udp_host(char * service)
+int udp_host(const char * service)
 {
     return net_host(service,SOCK_DGRAM);
 }
@@ -185,4 +194,47 @@ FILE * tcp_listen_stream(int listen)
     assert(ret != NULL);
 
     return ret;
+}
+
+tcp_parent * tcp_parent_host(int fd)
+{
+    tcp_parent * ret = calloc(1,sizeof(*ret));
+    ret->fd = fd;
+    pthread_mutex_init(&ret->mutex,NULL);
+    return ret;
+}
+
+tcp_child * tcp_parent_listen(tcp_parent * parent)
+{	
+    tcp_child * ret;
+    int fd = tcp_listen(parent->fd);
+    pthread_mutex_lock(&parent->mutex);
+    {
+	if(fd == -1)
+	{
+	    ret = NULL;
+	}
+        else
+	{
+	    ret = malloc(sizeof(*ret));
+	    ret->parent = parent;
+	    ret->fd = fd;
+	}
+    }
+    pthread_mutex_unlock(&parent->mutex);
+    return ret;
+}
+
+void tcp_halt_parent(tcp_parent * parent)
+{
+    pthread_mutex_lock(&parent->mutex);
+    {
+	close(parent->fd);
+	
+	for_range(child,*parent)
+	{
+	    close((*child)->fd);
+	}
+    }
+    pthread_mutex_unlock(&parent->mutex);
 }
