@@ -1,5 +1,8 @@
-#include "array.h"
-#include <stdbool.h>
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "hash_table.h"
 
 enum word_type {

@@ -1,8 +1,6 @@
+#include "precompiled.h"
+
 #define FLAT_INCLUDES
-#include <stdbool.h>
-#include <pthread.h>
-#include <stdlib.h>
-#include <assert.h>
 
 #include "thread_pool.h"
 
@@ -28,8 +26,10 @@ static void * run_thread(void * arg)
 
     enum { CHILD_NO, CHILD_YES, CHILD_ERROR } child_state = CHILD_NO;
     pthread_t child;
+
+    int id = --handler->count;
     
-    if(1 < handler->count--)
+    if(0 < handler->count)
     {
 	if( -1 == pthread_create(&child,NULL,run_thread,arg) )
 	    child_state = CHILD_ERROR;
@@ -37,7 +37,7 @@ static void * run_thread(void * arg)
 	    child_state = CHILD_YES;
     }
 
-    void * ret = handler->callback(handler->arg);
+    void * ret = handler->callback(id,handler->arg);
 
     if(child_state == CHILD_YES)
     {

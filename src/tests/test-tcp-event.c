@@ -1,8 +1,9 @@
-#include <string.h>
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
 #include "tcp_event.h"
-#include "print.h"
-#include <stdlib.h>
-#include <assert.h>
+//#include "print.h"
 
 void cb_connect(tcp_event_connection_state * client)
 {
@@ -40,7 +41,7 @@ int main(int argc, char * argv[])
 {
     if(argc != 2)
     {
-	print_error("usage: %s [port]",argv[0]);
+	log_error("usage: %s [port]",argv[0]);
 	exit(1);
     }
 
@@ -54,7 +55,7 @@ int main(int argc, char * argv[])
 
     if( -1 == tcp_event_listen(argv[1],&config) )
     {
-	print_error("tcp server failed");
+	log_debug("tcp server failed");
 	exit(1);
     }
 

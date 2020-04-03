@@ -1,4 +1,0 @@
-69 sums.txt.orig
-70 sums.txt
-No file:
-asdf  987234 0918234

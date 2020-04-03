@@ -1,12 +1,12 @@
 #ifndef FLAT_INCLUDES
+
+#include <stddef.h>
+
 #define FLAT_INCLUDES
 
-#include <stdio.h>
-#include <string.h>
-
-#include "stack.h"
-#include "array.h"
+#include "range.h"
 #include "hash_table.h"
+
 #endif
 
 size_t table_digest_string(const void * key);

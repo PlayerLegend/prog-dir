@@ -1,19 +1,9 @@
+#include "precompiled.h"
 
 #define FLAT_INCLUDES
-#include <stdio.h>
-#include <pthread.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <assert.h>
-#include <stdlib.h>
 
-#include "print.h"
-#include "range.h"
-#include "stack.h"
-#include "array.h"
+//#include "range.h"
+//#include "print.h"
 #include "network.h"
 
 static pthread_mutex_t net_lock_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -34,7 +24,7 @@ static struct addrinfo * get_info(const char * node, const char * service, int s
 
     if( 0 != (gai_status = getaddrinfo(node,service,&hints,&got_info)) )
     {
-	print_error("getaddrinfo: %s\n",gai_strerror(gai_status));
+	log_error("getaddrinfo: %s\n",gai_strerror(gai_status));
 
 	return NULL;
     }
@@ -194,47 +184,4 @@ FILE * tcp_listen_stream(int listen)
     assert(ret != NULL);
 
     return ret;
-}
-
-tcp_parent * tcp_parent_host(int fd)
-{
-    tcp_parent * ret = calloc(1,sizeof(*ret));
-    ret->fd = fd;
-    pthread_mutex_init(&ret->mutex,NULL);
-    return ret;
-}
-
-tcp_child * tcp_parent_listen(tcp_parent * parent)
-{	
-    tcp_child * ret;
-    int fd = tcp_listen(parent->fd);
-    pthread_mutex_lock(&parent->mutex);
-    {
-	if(fd == -1)
-	{
-	    ret = NULL;
-	}
-        else
-	{
-	    ret = malloc(sizeof(*ret));
-	    ret->parent = parent;
-	    ret->fd = fd;
-	}
-    }
-    pthread_mutex_unlock(&parent->mutex);
-    return ret;
-}
-
-void tcp_halt_parent(tcp_parent * parent)
-{
-    pthread_mutex_lock(&parent->mutex);
-    {
-	close(parent->fd);
-	
-	for_range(child,*parent)
-	{
-	    close((*child)->fd);
-	}
-    }
-    pthread_mutex_unlock(&parent->mutex);
 }

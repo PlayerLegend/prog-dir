@@ -1,9 +1,13 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
+#include "index_map.h"
+#include "hash_table.h"
 #include "dictionary.h"
 #include "hash_table_string.h"
-#include "print.h"
-#include "range.h"
-#include <string.h>
-#include <stdlib.h>
+//#include "print.h"
 
 typedef dictionary(unsigned int) count_dict;
 
@@ -51,7 +55,7 @@ void print_dictionary(count_dict * dict, enum filter filter_type, unsigned int f
 	    }
 	    else
 	    {
-		print_error("Invalid filter type");
+		log_debug("Invalid filter type");
 		exit(1);
 	    }
 	}
@@ -77,7 +81,7 @@ int main(int argc, char * argv[])
 	
 	if(argc > 2)
 	{
-	    print_error("Too many arguments, only one is valid (one filter)");
+	    log_error("Too many arguments, only one is valid (one filter)");
 	    exit(1);
 	}
 	else if(strncmp(argv[1],"le",2) == 0)
@@ -97,7 +101,7 @@ int main(int argc, char * argv[])
 	}
 	else
 	{
-	    print_error("Unknown filter type");
+	    log_error("Unknown filter type");
 	    exit(1);
 	}
 

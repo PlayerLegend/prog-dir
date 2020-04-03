@@ -2,6 +2,6 @@
 ;;; For more information see (info "(emacs) Directory Variables")
 
 ((c-mode
-  (flycheck-clang-include-path "../include" "../../include")))
+  (flycheck-clang-include-path "../include" "../../include" "/opt/vulkan/include")))
 
 

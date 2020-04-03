@@ -1,13 +1,16 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "network.h"
-#include "print.h"
-#include <stdlib.h>
-#include <unistd.h>
+//#include "print.h"
 
 int main(int argc, char * argv[])
 {
     if(argc != 3)
     {
-	print_error("usage: %s [service] [message]",argv[0]);
+	log_error("usage: %s [service] [message]",argv[0]);
 	exit(1);
     }
 
@@ -23,7 +26,7 @@ int main(int argc, char * argv[])
 
     if( NULL == (comm = tcp_listen_stream(listen)) )
     {
-	print_error("failed to listen");
+	log_error("Failed to listen");
 	close(listen);
 	exit(1);
     }

@@ -1,8 +1,10 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
 #include "network.h"
-#include "print.h"
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
+//#include "range.h"
+//#include "print.h"
 
 void test_hosting_works()
 {
@@ -10,7 +12,7 @@ void test_hosting_works()
     int fd = tcp_host(service);
     if(-1 == fd)
     {
-	print_error("Couldn't host tcp on '%s'",service);
+	log_error("Couldn't host tcp on '%s'",service);
 	exit(1);
     }
     else
@@ -22,7 +24,7 @@ void test_hosting_works()
     fd = udp_host(service);
     if(-1 == fd)
     {
-	print_error("Couldn't host udp on '%s'",service);
+	log_debug("Couldn't host udp on '%s'",service);
 	exit(1);
     }
     else

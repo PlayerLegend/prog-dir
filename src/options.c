@@ -1,26 +1,17 @@
+#include "precompiled.h"
+
 #define FLAT_INCLUDES
 
-#include <stdio.h>
-#include <stdbool.h>
-
-#include "stack.h"
-#include "array.h"
+//#include "range.h"
 #include "index_map.h"
 #include "hash_table.h"
 #include "dictionary.h"
 #include "delimit.h"
 #include "options.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <getopt.h>
 
 #include "hash_table_string.h"
-#include "print.h"
-#include "print_array.h"
-
-#include <assert.h>
+//#include "print.h"
 
 void options_init(option_db * db)
 {

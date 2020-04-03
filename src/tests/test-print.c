@@ -1,16 +1,57 @@
+#include "precompiled.h"
+
 #define FLAT_INCLUDES
-#include <stdio.h>
-#include "stack.h"
-#include "array.h"
-#include "print.h"
-#include "print_array.h"
-#include <string.h>
-#include <stdlib.h>
-#include "range.h"
+
+//#include "range.h"
+//#include "print.h"
 
 int main()
 {
-    char * string1 = "asdf";
+    char_array array = {};
+
+    printf("===============================================================================\n");
+    for(int i = 0; i < 20; i += 2)
+    {
+	int n = print_array_write(&array,"Line %d\n",i);
+	printf("Written array %d (%d == %zd): %s",i,n,array.end - array.begin,array.begin);
+	assert( (ssize_t)n == (array.end - array.begin));
+	assert(array.end[0] == '\0');
+	assert(array.end[-1] != '\0');
+    }
+
+    printf("===============================================================================\n");
+    free(array.begin);
+    array_forget(&array);
+    print_array_write(&array,"Initial\n");
+    
+    for(int i = 0; i < 10; i++)
+    {
+	ssize_t initial = array.end - array.begin;
+	int n = print_array_append(&array,"Line %d\n",i);
+	printf("Appended initialized array %d (%d == %zd): %s",i,n,(array.end - array.begin) - initial,array.begin);
+	assert( (ssize_t)n == (array.end - array.begin) - initial);
+	assert(array.end[0] == '\0');
+	assert(array.end[-1] != '\0');
+    }
+
+    printf("===============================================================================\n");
+    free(array.begin);
+    array_forget(&array);
+    
+    for(int i = 0; i < 10; i++)
+    {
+	ssize_t initial = array.end - array.begin;
+	int n = print_array_append(&array,"Line %d\n",i);
+	printf("Appended non-initialized array %d (%d == %zd): %s",i,n,(array.end - array.begin) - initial,array.begin);
+	assert( (ssize_t)n == (array.end - array.begin) - initial);
+	assert(array.end[0] == '\0');
+	assert(array.end[-1] != '\0');
+    }
+    printf("===============================================================================\n");
+    printf("done\n");
+    free(array.begin);
+    array_forget(&array);
+    /*char * string1 = "asdf";
     char * string2 = "bcle";
 
     char * string_write = NULL;
@@ -35,6 +76,22 @@ int main()
 
     print_array_append(&array,"appending the arrayyyyy %d %d %s\n",450,200,"heres a string again");
     printf("appended array(%zu): '%.*s'\n",count_range(array),(int)count_range(array),array.begin);
+
+    free(array.begin);
+    array = (char_array){0};
+
+    print_array_append(&array,"appending an empty array %d %d %s\n",451,201,"heres a string again1");
+    printf("initial appended array(%zu): '%.*s'\n",count_range(array),(int)count_range(array),array.begin);
+    print_array_append(&array,"appending again the empty array %d %d %s\n",452,202,"heres a string again2");
+    printf("again appended array(%zu): '%.*s'\n",count_range(array),(int)count_range(array),array.begin);
+    log_normal("Normal log %d %d %d",1,2,3);
+
+    log_error("print some error %s",", some string");
+    log_debug("print some debug %s","another some string");
+
+    log_error("Logging error %d %d %d",3,2,1);
     
+    printf("asdf\n");
+    */
     return 0;
 }

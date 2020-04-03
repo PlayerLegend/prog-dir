@@ -1,8 +1,10 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "delimit.h"
-#include "print.h"
-#include <stdlib.h>
-#include <string.h>
-#include "range.h"
+//#include "print.h"
 
 void test_clauses(const char * file_name,  clause_config config)
 {
@@ -77,7 +79,7 @@ int main(int argc, char * argv[])
 {
     if( argc != 3 )
     {
-	print_error("usage: %s [predicates file] [lists file]",argv[0]);
+	log_error("usage: %s [predicates file] [lists file]",argv[0]);
 	return 1;
     }
     

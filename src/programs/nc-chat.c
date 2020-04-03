@@ -1,21 +1,14 @@
-#include <stdio.h>
-#include <stdbool.h>
+#include "precompiled.h"
 
-#include "stack.h"
-#include "array.h"
+#define FLAT_INCLUDES
+
+//#include "range.h"
+//#include "print.h"
 #include "tcp_event.h"
-#include "print.h"
-#include "print_array.h"
 #include "index_map.h"
 #include "hash_table.h"
 #include "hash_table_string.h"
 #include "dictionary.h"
-#include "range.h"
-
-#include <stdlib.h>
-#include <pthread.h>
-#include <string.h>
-#include <stdarg.h>
 
 const char * server_username = "server";
 
@@ -273,7 +266,7 @@ int main(int argc, char * argv[])
     
     if(argc < 2 || argc > 3)
     {
-	print_error("usage: %s [port] [optional:motd]\n",argv[0]);
+	log_error("usage: %s [port] [optional:motd]\n",argv[0]);
 	exit(1);
     }
 

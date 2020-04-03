@@ -1,0 +1,33 @@
+Creating queue
+Created queue
+Started exec thread
+Adding low 0
+Adding low 1
+Adding low 2
+Added low priority jobs
+Adding high 0
+Adding high 1
+Adding high 2
+Added high priority jobs
+Running a job
+high: 0x1fff0006d8 2
+Running a job
+high: 0x1fff0006d8 1
+Running a job
+high: 0x1fff0006d4 1
+Running a job
+high: 0x1fff0006d0 0
+Running a job
+low: 0x1fff0006e0 0
+Running a job
+low: 0x1fff0006e4 1
+Running a job
+low: 0x1fff0006e8 2
+Running a job
+low: 0x1fff0006e8 1
+Running a job
+Stopping queue
+Stopped queue
+Job queue halted
+Joined thread
+Destroyed job queue, done

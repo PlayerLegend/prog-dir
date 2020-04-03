@@ -1,20 +1,13 @@
+#include "precompiled.h"
+
 #define FLAT_INCLUDES
-#include <stdio.h>
-#include "stack.h"
-#include "array.h"
+
+//#include "range.h"
 #include "index_map.h"
 #include "hash_table.h"
 #include "dictionary.h"
 #include "hash_table_string.h"
-#include <stdbool.h>
 #include "sha256.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <sys/stat.h>
-#include <stdbool.h>
 
 typedef dictionary(char*) sums_dict;
 typedef array(char*) lines_stack;

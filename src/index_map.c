@@ -1,6 +1,8 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
 #include "index_map.h"
-#include <stdlib.h>
-#include <string.h>
 
 void * _index_map_access(index_map_char * table, size_t element_size, size_t index)
 {

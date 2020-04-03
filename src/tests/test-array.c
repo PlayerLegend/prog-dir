@@ -1,6 +1,8 @@
-#include "array.h"
-#include "range.h"
-#include <assert.h>
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 
 int main()
 {

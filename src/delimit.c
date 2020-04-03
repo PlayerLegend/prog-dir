@@ -1,9 +1,10 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "delimit.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
-#include "range.h"
+//#include "print.h"
 
 static char find_c(char c, const char * list)
 {
@@ -21,7 +22,6 @@ static char find_c(char c, const char * list)
 #define finalize_word(out,build)		\
     if(!is_range_empty(build))			\
     {  	*array_push(&build) = '\0';		\
-	fflush(stdout);				\
 	*array_push(out) = (build).begin;	\
 	array_forget(&(build)); }
 
@@ -106,7 +106,7 @@ int delimit_clause(clause * out, const clause_config * config, char * input)
 
     if(!*input)
     {
-	printf("Could not find '%s' in '%s'\n",config->separator_list,input);
+	log_error("Could not find '%s' in clause '%s'\n",config->separator_list,input);
 	return -1;
     }
 

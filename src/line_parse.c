@@ -1,7 +1,8 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+//#include "range.h"
 #include "line_parse.h"
-#include <stdio.h>
-#include <string.h>
-#include "range.h"
 
 void clean_trailing(char * string, char target)
 {

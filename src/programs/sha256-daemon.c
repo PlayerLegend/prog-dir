@@ -1,11 +1,5 @@
 #define FLAT_INCLUDES
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <semaphore.h>
-#include <pthread.h>
+#include "precompiled.h"
 
 #include "stack.h"
 #include "array.h"
@@ -13,9 +7,9 @@
 #include "hash_table.h"
 #include "dictionary.h"
 #include "tcp_event.h"
-#include "print.h"
+//#include "print.h"
 #include "sha256.h"
-#include "range.h"
+//#include "range.h"
 #include "print_array.h"
 #include "delimit.h"
 #include "options.h"

@@ -1,8 +1,6 @@
+#include "precompiled.h"
+#define FLAT_INCLUDES
 #include "stream.h"
-
-#include <stdlib.h>
-
-#include <assert.h>
 
 char _stream_load(stream * _stream)
 {

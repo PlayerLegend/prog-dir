@@ -1,10 +1,8 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
 #include "tokenize.h"
-
 #include "serial.h"
-
-#include <stdlib.h>
-
-#include <stdbool.h>
 
 bool
 in_list(char c, char * list)

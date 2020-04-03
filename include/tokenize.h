@@ -1,7 +1,7 @@
 #ifndef FLAT_INCLUDES
-#define FLAT_INCLUDES
 #include <stdio.h>
-#include "stack.h"
+#define FLAT_INCLUDES
+#include "range.h"
 #include "tree.h"
 #endif
 

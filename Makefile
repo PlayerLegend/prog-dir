@@ -2,6 +2,7 @@ ALL_OBJ != find src -type f -name '*.o'
 ALL_SRC != find src include -type f -name '*.h' -or -name '*.c'
 ALL_C != find src -type f -name '*.c'
 ALL_STUB != find stub/enabled -name '*.makefile'
+ALL_GCH != find include -name '*.gch'
 
 export TMP_PREFIX ?=  prefix
 
@@ -9,7 +10,7 @@ export PREFIX ?= /usr/local
 
 export CFLAGS += -Iinclude
 
-DEFAULT_GCC_INCLUDES = $(shell printf -- '-I%s\n' `gcc -v -x c -E /dev/null 2>&1 | grep ^' ' | tail -n +2`)
+DEFAULT_GCC_INCLUDES != printf -- '-I%s\n' `gcc -v -x c -E /dev/null 2>&1 | grep ^' ' | tail -n +2`
 
 .PHONY: $(ALL_STUB) all install release debug build
 
@@ -24,7 +25,7 @@ debug:
 install:
 	TMP_PREFIX="$(PREFIX)" $(MAKE) release
 
-build-program:
+build-program: 
 	$(MAKE) stub/enabled/$(PROGRAM).makefile
 
 build: $(ALL_STUB)
@@ -59,6 +60,8 @@ $(ALL_STUB): make/depend.makefile
 make/depend.makefile: $(ALL_SRC) 
 	touch make/depend.makefile
 	makedepend -m -Y -f make/depend.makefile -- $(CFLAGS) -- $(ALL_C) 2> /dev/null
+	sed -i 's/precompiled\.h/precompiled.h.gch/g' make/depend.makefile
+	find include -name '*precompiled.h' -printf '%p.gch: %p\n\t$$(CC) $$(CFLAGS) %p\n' >> make/depend.makefile
 
 clean:
-	rm -f make/depend.makefile make/depend.makefile.bak $(ALL_OBJ)
+	rm -f make/depend.makefile make/depend.makefile.bak $(ALL_OBJ) $(ALL_GCH)

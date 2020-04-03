@@ -64,6 +64,8 @@ ls "$PREFIX"
 run_test() {
     test="$1"
 
+    echo "Running test: $test"
+
     ( if ! cd "$test"
       then
 	  return 1

@@ -1,6 +1,8 @@
-#include "stack.h"
+#include "precompiled.h"
 
-#include <stdio.h>
+#define FLAT_INCLUDES
+
+//#include "range.h"
 
 int main()
 {

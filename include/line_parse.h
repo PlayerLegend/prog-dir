@@ -1,6 +1,7 @@
 #ifndef FLAT_INCLUDES
-#define FLAT_INCLUDES
 #include <stdio.h>
+#define FLAT_INCLUDES
+#include "range.h"
 #include "stack.h"
 #include "array.h"
 #endif

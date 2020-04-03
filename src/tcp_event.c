@@ -1,16 +1,12 @@
-#include "tcp_event.h"
+#include "precompiled.h"
 #include <ev.h>
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
+//#include "print.h"
+#include "tcp_event.h"
 #include "network.h"
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include "print.h"
-#include "range.h"
-#include <assert.h>
-#include <stddef.h>
-#include <pthread.h>
 
 typedef struct {
     ev_io watch;

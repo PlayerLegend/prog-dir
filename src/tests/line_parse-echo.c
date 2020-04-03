@@ -1,5 +1,9 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "line_parse.h"
-#include <stdlib.h>
 
 int main()
 {

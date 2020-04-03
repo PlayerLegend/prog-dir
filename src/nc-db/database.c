@@ -13,9 +13,9 @@
 #include "hash_table_string.h"
 #include "dictionary.h"
 #include "sums_file.h"
-#include "range.h"
+//#include "range.h"
 #include "print_array.h"
-#include "print.h"
+//#include "print.h"
 #include "nc-db/database.h"
 
 typedef struct {

@@ -1,4 +1,4 @@
 PROGRAM_NAME = tests/test-tcp-server
-PROGRAM_OBJ = tests/test-tcp-server network print
+PROGRAM_OBJ = tests/test-tcp-server network print range
 
 LDLIBS += -lpthread

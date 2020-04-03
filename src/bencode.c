@@ -1,9 +1,10 @@
-#include <stdint.h>
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
 #include "dictionary.h"
 #include "hash_table_string.h"
 #include "stream.h"
-#include <string.h>
-#include <assert.h>
 
 enum bencode_type {
     BEN_STRING,

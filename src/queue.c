@@ -1,5 +1,9 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "queue.h"
-#include "range.h"
 
 void * _queue_pop(char_queue * queue, size_t element_size)
 {

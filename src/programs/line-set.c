@@ -1,9 +1,11 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
+#include "hash_table.h"
 #include "hash_table_string.h"
-#include <string.h>
-#include "print.h"
-#include <stdlib.h>
-#include "range.h"
-#include <stdbool.h>
+//#include "print.h"
 
 void terminate(char * string)
 {
@@ -43,7 +45,7 @@ char * get_flag_arg(int argc, char * argv[], char * flag, char * arg_default)
 	{
 	    if(arg + 1 == max)
 	    {
-		print_error("The flag %s requires an argument",flag);
+		log_error("The flag %s requires an argument",flag);
 		exit(1);
 	    }
 
@@ -88,7 +90,7 @@ int get_op_type(int argc, char * argv[])
 	}
     }
 
-    print_error("Unrecognized operation");
+    log_error("Unrecognized operation");
     exit(1);
     return -1;
 }
@@ -232,10 +234,10 @@ int main(int argc, char * argv[])
 	operation_not(streams);
 	return 0;
     default:
-	print_error("Invalid operation type");
+	log_error("Invalid operation type");
 	return 1;
     }
 
-    print_error("main should not reach here");
+    log_debug("main should not reach here");
     return 1;
 }

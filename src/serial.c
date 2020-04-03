@@ -1,8 +1,10 @@
-#include "serial.h"
-#include "stdlib.h"
+#include "precompiled.h"
 
-char
-_serial_reload(serial * reload)
+#define FLAT_INCLUDES
+
+#include "serial.h"
+
+char _serial_reload(serial * reload)
 {
     if(reload->file)
     {
@@ -45,8 +47,7 @@ shutdown:
     return '\0';
 }
 
-void
-serial_file(serial * open, FILE * file)
+void serial_file(serial * open, FILE * file)
 {
     size_t buffer_size = 1024;
     
@@ -57,8 +58,7 @@ serial_file(serial * open, FILE * file)
     };
 }
 
-void
-serial_mem(serial * open, void * mem, size_t size)
+void serial_mem(serial * open, void * mem, size_t size)
 {
     *open = (serial)
     {

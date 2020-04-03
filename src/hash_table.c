@@ -1,11 +1,10 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
+//#include "print.h"
 #include "hash_table.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include "print.h"
-#include <stdbool.h>
-#include <assert.h>
-#include <string.h>
-#include "range.h"
 
 #define GOLDEN_RATIO 1.61803398875
 #define INITIAL_PRIME 27
@@ -149,7 +148,7 @@ table_bucket * _table_find(table * in, const void * key, size_t digest)
 	}
     }
 
-    print_error("ran out of indexes, shouldn't be possible, it's broke");
+    log_debug("ran out of indexes, shouldn't be possible, it's broke");
     
     return NULL;
 }
@@ -175,7 +174,7 @@ int table_fill(table_lookup lookup)
     {
 	if (-1 == lookup.table->config.copy(&set,lookup.key))
 	{
-	    print_error("copy failed");
+	    log_debug("copy failed");
 	    return -1;
 	}
     }

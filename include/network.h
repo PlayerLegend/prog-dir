@@ -3,8 +3,14 @@
 #include <stdio.h>
 #endif
 
+typedef struct net_address net_address;
+
+net_address * get_net_address(const char * node, const char * service);
+
 int tcp_host(const char * service);
 int udp_host(const char * service);
+
+
 
 int tcp_connect(const char * node, const char * service);
 int tcp_listen(int fd);

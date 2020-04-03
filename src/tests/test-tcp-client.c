@@ -1,12 +1,16 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
+//#include "range.h"
 #include "network.h"
-#include "print.h"
-#include <stdlib.h>
+//#include "print.h"
 
 int main(int argc, char * argv[])
 {
     if( argc != 4 )
     {
-	print_error("usage: %s [host] [service] [message]",argv[0]);
+	log_error("usage: %s [host] [service] [message]",argv[0]);
 	exit(1);
     }
 
@@ -18,7 +22,7 @@ int main(int argc, char * argv[])
 
     if( NULL == (comm = tcp_connect_stream(host,service)) )
     {
-	print_error("Failed to connect stream");
+	log_error("Failed to connect stream");
 	exit(1);
     }
     

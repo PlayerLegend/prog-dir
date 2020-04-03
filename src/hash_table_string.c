@@ -1,6 +1,8 @@
+#include "precompiled.h"
+
+#define FLAT_INCLUDES
+
 #include "hash_table_string.h"
-#include <string.h>
-#include <stdlib.h>
 
 size_t table_digest_string(const void * key)
 {
