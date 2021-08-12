@@ -1,0 +1,10 @@
+* purpose
+  map digests to data blocks, list blocks
+
+* network scope
+  local machine
+
+* hashes
+  hash function should be flexible, the program should be able to verify many different kinds of hashes
+  the program should have a preferred hash type, and can upgrade blocks with non-preferred hash types to the preferred hash type
+

@@ -1,2 +1,0 @@
-this is a file that gets read by the stream test
-it should be kinda long so that it loads the buffer a few times

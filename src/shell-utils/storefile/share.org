@@ -1,0 +1,27 @@
+* as a software component
+
+  the server will be read only, if it finds that a file is corrupt then it will record that in a list but not touch the file
+  when it starts up it will search the directories it is given for files and assume that their filename is their digest
+  
+* commands that the sharing server accepts:
+
+  - digest a given part of the file
+
+    arguments are: file digest, offset, size
+
+  - send a given part of the file
+
+    arguments are: file digest, offset, size
+
+  - check a digest that a peer thinks is wrong
+
+    arguments are: file digest
+
+* downloading procedure
+
+  1) find peers who have the file you want
+  2) request chunks of the file from peers (you can choose the size/position of the chunks arbitrarily)
+  3) once the transfer is completed, checksum the file with the digest you expect
+     - if it matches, then you are done
+     - if not, then go through the peers hosting the file and download the different blocks they advertise.
+       Try the differences on a per peer basis until you either match the digest or run out of peers.

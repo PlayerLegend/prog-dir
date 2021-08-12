@@ -1,5 +1,9 @@
-*.o
-make/depend.makefile
-make/depend.makefile.bak
+external
+boot
+sbin
+bin
+test
 Makefile.bak
-prefix
+init
+*.o
+*.xz

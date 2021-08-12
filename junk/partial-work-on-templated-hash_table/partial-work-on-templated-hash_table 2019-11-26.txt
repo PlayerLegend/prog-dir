@@ -1,2 +1,0 @@
-I realized that the calls to array_push and array_pop in the generic insert function wouldn't work due to the generic types
-no good way to fix this

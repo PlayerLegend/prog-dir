@@ -1,2 +1,0 @@
-Hosted tcp on '23572'!
-Hosted udp on '23572'!

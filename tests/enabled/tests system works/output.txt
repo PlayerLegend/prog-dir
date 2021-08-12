@@ -1,2 +1,0 @@
-This script echoes some text
-and then exits
