@@ -404,7 +404,7 @@ keyargs_define(metahash_fd)
 	if (args.out_fd >= 0)
 	{
 	    wrote_size = 0;
-	    while (0 < (size = buffer_write (.fd = args.out_fd, .buffer = (buffer_char*) &tmp_buffer, .wrote_size = &wrote_size)))
+	    while (0 < (size = buffer_write (.fd = args.out_fd, .buffer = (range_const_char*) &tmp_buffer.range_cast.const_cast, .wrote_size = &wrote_size)))
 	    {
 	    }
 

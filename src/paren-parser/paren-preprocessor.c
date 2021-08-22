@@ -8,6 +8,7 @@
 #include "../array/range.h"
 #include "../array/buffer.h"
 #include "../immutable/immutable.h"
+#include "../keyargs/keyargs.h"
 #include "paren-parser.h"
 #include "paren-preprocessor.h"
 
@@ -364,12 +365,12 @@ fail:
     return false;
 }
 
-paren_atom * _paren_preprocessor (struct paren_parse_arg arg)
+keyargs_define(paren_preprocessor)
 {
-    const char * include_string = immutable_string (arg.namespace, "include");
-    const char * macro_string = immutable_string (arg.namespace, "macro");
+    const char * include_string = immutable_string (args.namespace, "include");
+    const char * macro_string = immutable_string (args.namespace, "macro");
 
-    paren_atom * retval = _paren_parse (arg);
+    paren_atom * retval = keyargs_func_name(paren_parse) (args);
     
     typedef struct layer layer;
     struct layer { paren_atom ** set; macro * macros; layer * next; };
@@ -400,7 +401,7 @@ paren_atom * _paren_preprocessor (struct paren_parse_arg arg)
 	    {
 		if (child->child.text == include_string)
 		{
-		    if (!process_include (arg.namespace, layers->set))
+		    if (!process_include (args.namespace, layers->set))
 		    {
 			goto fail;
 		    }
@@ -409,7 +410,7 @@ paren_atom * _paren_preprocessor (struct paren_parse_arg arg)
 		}
 		else if (child->child.text == macro_string)
 		{
-		    macro * new_macro = read_macro (arg.namespace, layers->set);
+		    macro * new_macro = read_macro (args.namespace, layers->set);
 		    
 		    if (!new_macro)
 		    {
@@ -429,7 +430,7 @@ paren_atom * _paren_preprocessor (struct paren_parse_arg arg)
 			{
 			    if (check_macro->name == child->child.text)
 			    {
-				if (apply_macro (arg.namespace, layers->set, check_macro))
+				if (apply_macro (args.namespace, layers->set, check_macro))
 				{
 				    goto restart;
 				}
@@ -488,5 +489,6 @@ paren_atom * _paren_preprocessor (struct paren_parse_arg arg)
     return retval;
 
 fail:
+    paren_atom_free (retval);
     return NULL;
 };

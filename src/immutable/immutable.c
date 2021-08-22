@@ -16,8 +16,6 @@ char *realpath(const char *path, char *resolved_path);
 #include "../table2/table.h"
 #include "../table2/table-string.h"
 
-
-
 struct immutable_namespace
 {
     table_string table;

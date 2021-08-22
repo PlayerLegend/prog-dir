@@ -4,6 +4,7 @@ test/paren-parser: src/log/log.o
 test/paren-parser: src/immutable/immutable.o
 test/paren-parser: src/buffer_io/buffer_io.o
 test/paren-parser: src/table2/table.o
+test/paren-parser: src/array/buffer.o
 
 test/run-paren-parser: src/paren-parser/test/paren-parser.test.sh
 test/paren-preprocessor: src/paren-parser/paren-preprocessor.o
@@ -13,6 +14,7 @@ test/paren-preprocessor: src/log/log.o
 test/paren-preprocessor: src/immutable/immutable.o
 test/paren-preprocessor: src/buffer_io/buffer_io.o
 test/paren-preprocessor: src/table2/table.o
+test/paren-preprocessor: src/array/buffer.o
 
 test/run-paren-preprocessor: src/paren-parser/test/paren-preprocessor.test.sh
 

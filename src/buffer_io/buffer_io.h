@@ -28,7 +28,7 @@ long int buffer_printf_append(buffer_char * buffer, const char * str, ...);
 keyargs_declare(long int, buffer_read, buffer_char * buffer; size_t max_buffer_size; size_t initial_alloc_size; int fd;);
 #define buffer_read(...) keyargs_call(buffer_read, __VA_ARGS__)
 
-keyargs_declare(long int, buffer_write, buffer_char * buffer; size_t * wrote_size; int fd;);
+keyargs_declare(long int, buffer_write, range_const_char * buffer; size_t * wrote_size; int fd;);
 #define buffer_write(...) keyargs_call(buffer_write, __VA_ARGS__)
 
 keyargs_declare(bool, buffer_getline_fd,
@@ -36,9 +36,12 @@ keyargs_declare(bool, buffer_getline_fd,
 		const char * sep;
 		size_t protect_size;
 		bool init;
-		struct keyargs_struct_name(buffer_read) read;);
+		keyargs_struct_name(buffer_read) read;);
+
 #define buffer_getline_fd(...) keyargs_call(buffer_getline_fd, __VA_ARGS__)
 
 void buffer_getline_end (size_t protect_size, const char * sep, range_char * line, buffer_char * buffer);
 
 #define buffer_getline_init(buffer_p) { (buffer_p)->end = (buffer_p)->begin; }
+
+void buffer_strcpy (buffer_char * to, const char * input);

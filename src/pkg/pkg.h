@@ -6,6 +6,6 @@
 typedef struct pkg_root pkg_root;
 
 pkg_root * pkg_root_open(const char * path);
-bool pkg_install_name(const char * name);
-bool pkg_install_fd(int fd);
+bool pkg_install_name(pkg_root * root, const char * name);
+bool pkg_install_fd(pkg_root * root, int fd);
 void pkg_root_close (pkg_root * root);

@@ -1,95 +1,73 @@
 #ifndef FLAT_INCLUDES
 #include <stdint.h>
+#include <stdbool.h>
 #define FLAT_INCLUDES
 #endif
 
 typedef uint64_t blkd_size;
+typedef union blkd_mem_digest blkd_mem_digest;
+union blkd_mem_digest {
+    uint8_t uint8[32];
+    uint32_t uint32[8];
+    uint64_t uint64[4];
+};
+
+typedef char blkd_group_name[16];
 
 #define BLKD_SECTOR_SIZE 4096
-#define BLKD_FREEMAP_SIZE (BLKD_SECTOR_SIZE * (BLKD_SECTOR_SIZE * 8))
-#define BLKD_PBLOCK_COUNT (BLKD_SECTOR_SIZE / sizeof(blkd_size))
+#define BLKD_MAGIC *((blkd_size*)(const char[]) { 'b', 'l', 'k', 'd', 'h', 'e', 'a', 'd' })
+#define BLKD_HEADER_VERSION 1
 
-typedef unsigned char sha256sum_digest[256 / 8];
-
-typedef struct blkd_map blkd_map;
-struct blkd_map
-{
-    sha256sum_digest checksum;
-    unsigned char bits[BLKD_SECTOR_SIZE - sizeof(sha256sum_digest)];
+typedef struct blkd_extent blkd_extent;
+struct blkd_extent {
+    blkd_size begin;
+    blkd_size end;
 };
 
-typedef struct blkd_tree_branch blkd_tree_branch;
-struct blkd_tree_branch
-{
-    sha256sum_digest checksum;
-    blkd_size pointer[(BLKD_SECTOR_SIZE - sizeof(sha256sum_digest)) / sizeof(blkd_size)];
+typedef struct blkd_node blkd_node;
+struct blkd_node {
+    uint64_t size;
+    blkd_extent alloc;
+    unsigned char metahash[];
 };
 
-typedef struct blkd_tree blkd_tree;
-struct blkd_tree
-{
-    blkd_size indirection_count; // 0: these are leaves, 1: these point to leaves, ...
-    blkd_size pointer[4];
+typedef enum blkd_type blkd_type;
+enum blkd_type {
+    BLKD_TYPE_DATA,
+    BLKD_TYPE_FILE,
+    BLKD_TYPE_DIR,
+    BLKD_TYPE_NODES,
+    BLKD_TYPE_PUBKEY_LIST,
 };
 
-typedef struct blkd_inode_directory_pair blkd_inode_directory_pair;
-struct blkd_inode_directory_pair
-{
-    blkd_size digest2;
-    blkd_size pointer;
-};
-
-typedef struct blkd_inode_directory blkd_inode_directory;
-struct blkd_inode_directory
-{
-    sha256sum_digest digest;
-    blkd_inode_directory_pair pairs[(BLKD_SECTOR_SIZE - sizeof(sha256sum_digest)) / (2 * 8)];
-};
-
-typedef struct blkd_inode blkd_inode;
-struct blkd_inode
-{
+typedef struct {
     union {
 	struct {
-	    blkd_tree owner_ids;
-	    blkd_tree data_blocks;
+	    blkd_size magic;
+	    blkd_size version;
+	    blkd_size share_groups;
+	    blkd_size content_size;
+	    union {
+		blkd_type type;
+		blkd_size _type_reserve;
+	    };
+	    blkd_size wrote_time;
 	};
-
-	unsigned char reserved[BLKD_SECTOR_SIZE / 2];
+	char _reserve[1024];
     };
+    unsigned char header_metadigest[1024];
+    unsigned char data_metadigest[2048];
+}
+    blkd_header;
 
-    unsigned char digest[BLKD_SECTOR_SIZE / 2];
-};
+typedef union {
+    char _reserve[BLKD_SECTOR_SIZE];
+    struct {
+	blkd_size item_count;
+	unsigned char items_start;
+	// item format: blkd_size size_of_rest; unsigned char metahash[]; char null_terminated_name[];
+    };
+}
+    blkd_dir_sector;
 
-struct blkd_data_region_header
-{
-    sha256sum_digest checksum;
-    blkd_size size;
-};
-
-struct blkd_superblock
-{
-    sha256sum_digest checksum;
-    blkd_size magic_number;
-    blkd_tree inode_table; // refers to blkd_inode_directories
-    blkd_tree data_region;
-};
-
-typedef struct blkd_generic_block blkd_generic_block;
-struct blkd_generic_block
-{
-    sha256sum_digest checksum;
-    unsigned char payload[BLKD_SECTOR_SIZE - sizeof(sha256sum_digest)];
-};
-
-typedef union blkd_block blkd_block;
-union blkd_block
-{
-    blkd_generic_block generic;
-    blkd_map map;
-    blkd_tree tree;
-    blkd_tree_branch tree_branch;
-    blkd_inode_directory directory;
-};
-
-typedef struct blkd_system blkd_system;
+bool blkd_mkfs (int fd);

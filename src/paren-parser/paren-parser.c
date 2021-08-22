@@ -9,6 +9,7 @@
 #include <unistd.h>
 #define FLAT_INCLUDES
 #include "../immutable/immutable.h"
+#include "../keyargs/keyargs.h"
 #include "paren-parser.h"
 #include "../log/log.h"
 #include "../array/range.h"
@@ -132,23 +133,23 @@ inline static char * _load_file (const char * filename)
     }
 }
 
-paren_atom * _paren_parse(struct paren_parse_arg arg)
+keyargs_define(paren_parse)
 {
-    if (!arg.filename)
+    if (!args.filename)
     {
-	arg.filename = "input";
+	args.filename = "input";
     }
     else
     {
-	arg.filename = immutable_path (arg.namespace, arg.filename);
+	args.filename = immutable_path (args.namespace, args.filename);
     }
 
     char * self_load_text;
 
-    if (!arg.text)
+    if (!args.text)
     {
-	self_load_text = _load_file (arg.filename);
-	arg.text = self_load_text;
+	self_load_text = _load_file (args.filename);
+	args.text = self_load_text;
 	if (!self_load_text)
 	{
 	    return NULL;
@@ -159,13 +160,16 @@ paren_atom * _paren_parse(struct paren_parse_arg arg)
 	self_load_text = NULL;
     }
     
-    const char * iter = arg.text;
+    const char * iter = args.text;
     char c;
     struct buffer(paren_atom**) paths = {0};
     buffer_char word_buffer = {0};
     range_const_char word_range;
     paren_atom * retval = NULL;
     paren_atom ** set = &retval;
+
+    const paren_atom error_dummy = { .filename = args.filename };
+    const paren_atom * error_atom = &error_dummy;
 
     size_t line_number = 1;
     const char * last_newline = iter;
@@ -180,7 +184,7 @@ paren_atom * _paren_parse(struct paren_parse_arg arg)
 	{
 	    iter++;
 	    assert (set);
-	    *set = new_node (line_number, iter - last_newline, immutable_string (NULL, arg.filename));
+	    error_atom = *set = new_node (line_number, iter - last_newline, immutable_string (NULL, args.filename));
 	    *buffer_push (paths) = &(*set)->peer;
 	    set = &(*set)->child.atom;
 	}
@@ -193,7 +197,7 @@ paren_atom * _paren_parse(struct paren_parse_arg arg)
 	    }
 	    else
 	    {
-		fatal ("Unexpected '%c'", PAREN_CLOSE);
+		paren_fatal (error_atom, "Unexpected '%c'", PAREN_CLOSE);
 	    }
 	}
 	else if (!c)
@@ -208,7 +212,7 @@ paren_atom * _paren_parse(struct paren_parse_arg arg)
 
 	    copy_range (&word_buffer, &word_range);
 
-	    *set = new_node (line_number, word_range.begin - last_newline, immutable_string (NULL, arg.filename));
+	    error_atom = *set = new_node (line_number, word_range.begin - last_newline, immutable_string (NULL, args.filename));
 
 	    (*set)->child.is_text = true;
 	    (*set)->child.text = immutable_string (NULL, word_buffer.begin);
@@ -220,7 +224,7 @@ paren_atom * _paren_parse(struct paren_parse_arg arg)
 
     if (range_count (paths) != 0)
     {
-	fatal ("Expected '%c'", PAREN_CLOSE);
+	paren_fatal (error_atom, "Expected '%c'", PAREN_CLOSE);
     }
     else
     {

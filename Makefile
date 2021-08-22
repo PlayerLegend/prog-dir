@@ -14,7 +14,7 @@ all: utils
 SUB_MAKEFILES != find src -type f -name '*.makefile'
 include $(SUB_MAKEFILES)
 
-debug tests test: CFLAGS += -g -Wall -Werror
+debug tests test: CFLAGS += -ggdb -Wall -Werror
 utils benchmarks: CFLAGS += -DNDEBUG
 
 utils debug: $(UTILS_C) $(UTILS_SH)
@@ -85,15 +85,48 @@ src/metahash/metahash.o: src/keyargs/keyargs.h src/array/range.h
 src/metahash/metahash.o: src/array/buffer.h src/buffer_io/buffer_io.h
 src/metahash/metahash.o: src/vluint/vluint.h src/metahash/metahash.h
 src/metahash/metahash.o: src/log/log.h
+src/dzip/dzip.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/dzip/inflate.old.o: src/array/range.h src/array/buffer.h
+src/dzip/inflate.old.o: src/keyargs/keyargs.h src/dzip/dzip.h
+src/dzip/inflate.old.o: src/vluint/vluint.h src/dzip/internal-shared.h
+src/dzip/inflate.old.o: src/log/log.h
+src/dzip/test/dzip-deflate.test.o: src/array/range.h src/array/buffer.h
+src/dzip/test/dzip-deflate.test.o: src/keyargs/keyargs.h
+src/dzip/test/dzip-deflate.test.o: src/buffer_io/buffer_io.h src/dzip/dzip.h
+src/dzip/dzip.util.o: src/array/range.h src/array/buffer.h
+src/dzip/dzip.util.o: src/keyargs/keyargs.h src/dzip/dzip.h
+src/dzip/dzip.util.o: src/buffer_io/buffer_io.h src/log/log.h
+src/dzip/deflate.o: src/array/range.h src/array/buffer.h
+src/dzip/deflate.o: src/keyargs/keyargs.h src/dzip/dzip.h src/vluint/vluint.h
+src/dzip/deflate.o: src/dzip/internal-shared.h src/log/log.h
+src/dzip/inflate.o: src/array/range.h src/array/buffer.h
+src/dzip/inflate.o: src/keyargs/keyargs.h src/dzip/dzip.h src/vluint/vluint.h
+src/dzip/inflate.o: src/dzip/internal-shared.h src/log/log.h
+src/dzip/dzip.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/dzip/dzip.o: src/dzip/dzip.h src/log/log.h src/vluint/vluint.h
+src/dzip/dzip.old.o: src/array/range.h src/array/buffer.h
+src/dzip/dzip.old.o: src/keyargs/keyargs.h src/dzip/dzip.h src/log/log.h
+src/dzip/dzip.old.o: src/vluint/vluint.h src/sliding-window/sliding-window.h
+src/dzip/internal-shared.o: src/array/range.h src/array/buffer.h
+src/dzip/internal-shared.o: src/keyargs/keyargs.h src/vluint/vluint.h
+src/sliding-window/test/sliding-window.test.o: src/array/range.h
+src/sliding-window/test/sliding-window.test.o: src/array/buffer.h
+src/sliding-window/test/sliding-window.test.o: src/sliding-window/sliding-window.h
+src/sliding-window/sliding-window.o: src/array/range.h
 src/array/buffer.o: src/array/range.h
-src/array/test/buffer.test.o: src/array/buffer.h src/array/range.h
+src/array/test/buffer.test.o: src/array/range.h src/array/buffer.h
 src/array/test/buffer.test.o: src/test/debug.h
 src/array/test/range.test.o: src/array/range.h src/test/debug.h
+src/array/buffer.o: src/array/range.h src/array/buffer.h
 src/tutorial/ffmpeg-video-player/player.o: src/log/log.h
 src/pkg/pkg.o: src/pkg/pkg.h src/array/range.h src/array/buffer.h
 src/pkg/pkg.o: src/list/list.h src/keyargs/keyargs.h
 src/pkg/pkg.o: src/buffer_io/buffer_io.h src/log/log.h src/tar/tar.h
-src/pkg/pkg.o: src/table/table.h
+src/pkg/pkg.o: src/path/path.h src/immutable/immutable.h
+src/pkg/pkg.o: src/paren-parser/paren-parser.h
+src/pkg/pkg.o: src/paren-parser/paren-preprocessor.h src/table2/table.h
+src/pkg/pkg.o: src/table2/table-string.h
+src/pkg/pkg.util.o: src/pkg/pkg.h src/log/log.h
 src/table2/table.o: src/array/range.h src/array/buffer.h src/table2/table.h
 src/table2/table.o: src/table2/table-string.h
 src/table2/table.o: src/array/range.h
@@ -115,6 +148,7 @@ src/table2/test/table-string-benchmark.test.o: src/buffer_io/buffer_io.h
 src/table2/test/table-string-benchmark.test.o: src/log/log.h
 src/kademlia/kademlia.o: src/list/list.h
 src/paren-parser/paren-parser.o: src/immutable/immutable.h
+src/paren-parser/paren-parser.o: src/keyargs/keyargs.h
 src/paren-parser/test/paren-parser.test.o: src/keyargs/keyargs.h
 src/paren-parser/test/paren-parser.test.o: src/immutable/immutable.h
 src/paren-parser/test/paren-parser.test.o: src/paren-parser/paren-parser.h
@@ -129,14 +163,17 @@ src/paren-parser/test/paren-preprocessor.test.o: src/array/range.h
 src/paren-parser/test/paren-preprocessor.test.o: src/array/buffer.h
 src/paren-parser/test/paren-preprocessor.test.o: src/buffer_io/buffer_io.h
 src/paren-parser/paren-preprocessor.o: src/immutable/immutable.h
+src/paren-parser/paren-preprocessor.o: src/keyargs/keyargs.h
 src/paren-parser/paren-preprocessor.o: src/paren-parser/paren-parser.h
 src/paren-parser/paren-parser.o: src/immutable/immutable.h
+src/paren-parser/paren-parser.o: src/keyargs/keyargs.h
 src/paren-parser/paren-parser.o: src/paren-parser/paren-parser.h
 src/paren-parser/paren-parser.o: src/log/log.h src/array/range.h
 src/paren-parser/paren-parser.o: src/array/buffer.h
 src/paren-parser/paren-preprocessor.o: src/log/log.h src/array/range.h
 src/paren-parser/paren-preprocessor.o: src/array/buffer.h
 src/paren-parser/paren-preprocessor.o: src/immutable/immutable.h
+src/paren-parser/paren-preprocessor.o: src/keyargs/keyargs.h
 src/paren-parser/paren-preprocessor.o: src/paren-parser/paren-parser.h
 src/paren-parser/paren-preprocessor.o: src/paren-parser/paren-preprocessor.h
 src/filestore/filestore-add.util.o: src/keyargs/keyargs.h src/array/range.h
@@ -164,7 +201,7 @@ src/filestore/filestore.o: src/metabase/metabase.h src/metahash/metahash.h
 src/table/test/table.test.o: src/array/range.h src/list/list.h
 src/table/test/table.test.o: src/table2/table.h src/test/debug.h
 src/table/table.o: src/array/range.h src/list/list.h
-src/blkd/blkd.o: src/blkd/blkd.h
+src/blkd/blkd.o: src/blkd/blkd.h src/log/log.h
 src/blkd/test/blkd.test.o: src/blkd/blkd.h
 src/blkd/blkd-cache.o: src/blkd/blkd.h
 src/blkd/blkd-cache-io.o: src/blkd/blkd.h
@@ -173,6 +210,7 @@ src/blkd/blkd-cache.o: src/blkd/blkd.h src/blkd/blkd-cache-io.h
 src/blkd/blkd-cache.o: src/table/table.h
 src/blkd/blkd-cache-io.o: src/array/range.h src/list/list.h src/blkd/blkd.h
 src/blkd/blkd-cache-io.o: src/blkd/blkd-cache-io.h src/table/table.h
+src/blkd/blkd-fuse.o: src/blkd/blkd.h
 src/blkd/blkd-direct-io.o: src/blkd/blkd.h
 src/file/file.o: src/array/range.h src/array/buffer.h src/file/file.h
 src/file/test/file.test.o: src/array/range.h src/array/buffer.h
@@ -224,6 +262,8 @@ src/base16/test/base16.test.o: src/array/range.h src/array/buffer.h
 src/base16/test/base16.test.o: src/base16/base16.h src/log/log.h
 src/base16/base16.o: src/array/range.h src/array/buffer.h src/base16/base16.h
 src/base16/base16.o: src/log/log.h
+src/path/path.o: src/path/path.h src/array/range.h src/array/buffer.h
+src/path/path.o: src/log/log.h
 src/log/log.o: src/log/log.h
 src/log/test/log.test.o: src/log/log.h src/test/debug.h
 src/vec/vec3.o: src/vec/vec.h

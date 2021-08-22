@@ -131,8 +131,8 @@ cmd_view_list() {
     feh -f - \
 	--keep-zoom-vp \
 	--action1 ";"[tag]"$0 add %F" \
-	--action2 ";"[search]"xterm -e view-image search %F" \
-	--action3 ";"[spawn]"PARENT=%F tag-interactive viewimage &" \
+	--action2 ";"[spawn]"PARENT=%F tag-interactive viewimage &" \
+	--action3 ";"[search]"xterm -e view-image search %F" \
 	--action4 ";"[copy]"convert %F png:- | xclip -selection clipboard -t image/png" \
 	--action5 [-asdf]"TAG=asdf-past TYPE=lewd tag add files %F; TAG=asdf TYPE=lewd tag remove files %F" \
 	"$@"

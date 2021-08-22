@@ -9,11 +9,11 @@
 
 typedef unsigned long long table_digest;
 
-#define table_typedef(key_type,table_name,...)				\
+#define table_typedef(query_tag,key_type,table_name,...)		\
     typedef key_type table_##table_name##_key;				\
     typedef const key_type table_##table_name##_const_key;		\
-    typedef struct table_##table_name##_query table_##table_name##_query; \
-    struct table_##table_name##_query {					\
+    typedef query_tag table_##table_name##_query table_##table_name##_query; \
+    query_tag table_##table_name##_query {					\
 	table_digest digest;						\
 	table_##table_name##_const_key key;				\
     };									\
@@ -46,7 +46,8 @@ char * _table_copy_strdup(const char * src);
 
 // table functions
 
-#define table_query(table_name, key) ((table_##table_name##_query) { table_##table_name##_hash(key), key })
+#define table_query_struct(table_name, key) ((table_##table_name##_query) { table_##table_name##_hash(key), key })
+#define table_query_union(table_name, key) ((table_##table_name##_query) { .key = key })
 
 #define table_bucket(table_name, table, query)		\
     ((table).begin + ((query).digest % (range_count (table))))	\

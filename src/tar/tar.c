@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 #define FLAT_INCLUDES
 #include "../array/range.h"
 #include "../array/buffer.h"
@@ -12,8 +13,6 @@
 #include "tar.h"
 #include "../log/log.h"
 #include "spec.h"
-
-#define BLOCK_SIZE 512
 
 void tar_restart(tar_state * state)
 {
@@ -45,6 +44,20 @@ static bool tar_get_size (size_t * size, const struct posix_header * header)
     return true;
 }
 
+static bool tar_get_mode (size_t * mode, const struct posix_header * header)
+{
+    char * endptr;
+    
+    *mode = strtol (header->mode, &endptr, 8);
+    if (!*header->mode || *endptr)
+    {
+	log_error ("could not parse mode, error at byte %zu", endptr - header->mode);
+	return false;
+    }
+
+    return true;
+}
+
 static bool block_is_zero (const range_const_char * header)
 {
     for (uint64_t *test = (void*) header->begin; (void*) test < (void*) header->end; test++)
@@ -60,7 +73,7 @@ static bool block_is_zero (const range_const_char * header)
 
 bool record_mem (buffer_char * buffer, range_const_char * mem, long long int size)
 {
-    long long int want_size = (size % BLOCK_SIZE == 0) ? size : (((size / BLOCK_SIZE) + 1) * BLOCK_SIZE);
+    long long int want_size = (size % TAR_BLOCK_SIZE == 0) ? size : (((size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE);
     
     if (range_count (*mem) < want_size)
     {
@@ -129,18 +142,18 @@ bool tar_update_mem (tar_state * state, range_const_char * rest, const range_con
 
 //    buffer_rewrite (state->header);
     
-    /*if (!record_mem (&state->header, mem, BLOCK_SIZE))
+    /*if (!record_mem (&state->header, mem, TAR_BLOCK_SIZE))
     {
 	goto notready;
 	}*/
 
-    if (range_count (*mem) < BLOCK_SIZE)
+    if (range_count (*mem) < TAR_BLOCK_SIZE)
     {
 	goto notready;
     }
     
-    range_const_char header_mem = { .begin = mem->begin, .end = mem->begin + BLOCK_SIZE };
-    rest->begin += BLOCK_SIZE;
+    range_const_char header_mem = { .begin = mem->begin, .end = mem->begin + TAR_BLOCK_SIZE };
+    rest->begin += TAR_BLOCK_SIZE;
 
     const struct posix_header * header = (void*) header_mem.begin;
     assert (sizeof(*header) <= (size_t)range_count (header_mem));
@@ -192,7 +205,7 @@ bool tar_update_mem (tar_state * state, range_const_char * rest, const range_con
 
 	goto notready;
     }
-
+	
     if (!longname)
     {
 	buffer_printf (&state->path, "%s", header->name);
@@ -218,6 +231,14 @@ bool tar_update_mem (tar_state * state, range_const_char * rest, const range_con
 	}
     }
 
+    if (state->type == TAR_FILE || state->type == TAR_DIR || state->type == TAR_HARDLINK || state->type == TAR_SYMLINK)
+    {
+	if (!tar_get_mode (&state->mode, header))
+	{
+	    log_fatal ("Could not read tar file mode");
+	}
+    }
+    
 //ready:
     state->ready = true;
     return true;
@@ -245,7 +266,7 @@ bool tar_update_fd (tar_state * state, int fd)
     {
 	buffer_rewrite (state->tmp);
 	
-	while (0 < (size = buffer_read (.fd = fd, .buffer = &state->tmp, .max_buffer_size = BLOCK_SIZE)))
+	while (0 < (size = buffer_read (.fd = fd, .buffer = &state->tmp, .max_buffer_size = TAR_BLOCK_SIZE)))
 	{}
 
 	if (size < 0)
@@ -253,7 +274,7 @@ bool tar_update_fd (tar_state * state, int fd)
 	    log_fatal ("Error reading from file descriptor");
 	}
 
-	if (range_count (state->tmp) < BLOCK_SIZE)
+	if (range_count (state->tmp) < TAR_BLOCK_SIZE)
 	{
 	    log_fatal ("Input closed prematurely");
 	}
@@ -281,6 +302,30 @@ done:
     return false;
 }
 
+bool tar_skip_file (tar_state * state, int fd)
+{
+    assert (state->type == TAR_FILE);
+    
+    size_t skip_size = (state->file.size % TAR_BLOCK_SIZE == 0) ? state->file.size : (((state->file.size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE);
+
+    assert (skip_size % TAR_BLOCK_SIZE == 0);
+
+    while (skip_size > 0)
+    {
+	buffer_rewrite (state->tmp);
+	if (!tar_read_region (.fd = fd, .buffer = &state->tmp, .size = TAR_BLOCK_SIZE))
+	{
+	    log_fatal ("Could not read from fd while skipping tar file");
+	}
+	skip_size -= TAR_BLOCK_SIZE;
+    }
+
+    return true;
+
+fail:
+    return false;
+}
+
 keyargs_define(tar_read_region)
 {
     if (!args.size)
@@ -288,7 +333,7 @@ keyargs_define(tar_read_region)
 	return true;
     }
     
-    size_t max_buffer_size = (args.size % BLOCK_SIZE == 0) ? args.size : (((args.size / BLOCK_SIZE) + 1) * BLOCK_SIZE);
+    size_t max_buffer_size = (args.size % TAR_BLOCK_SIZE == 0) ? args.size : (((args.size / TAR_BLOCK_SIZE) + 1) * TAR_BLOCK_SIZE);
 
     long int size;
     

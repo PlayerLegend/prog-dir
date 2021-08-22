@@ -67,7 +67,7 @@ keyargs_define(buffer_write)
     assert (args.buffer);
     assert (args.wrote_size);
 
-    char * write_point = args.buffer->begin + *args.wrote_size;
+    const char * write_point = args.buffer->begin + *args.wrote_size;
 
     if (write_point >= args.buffer->end)
     {
@@ -129,7 +129,7 @@ long int buffer_printf_append(buffer_char * buffer, const char * str, ...)
     return len;
 }
 
-inline static void buffer_downshift (size_t protect_size, buffer_char * buffer, char * new_begin)
+inline static void buffer_downshift_protect (size_t protect_size, buffer_char * buffer, char * new_begin)
 {
     range_char delete = { .begin = buffer->begin + protect_size, .end = new_begin };
 
@@ -216,7 +216,7 @@ keyargs_define (buffer_getline_fd)
     
 //shiftdown:
     //log_debug ("shiftdown");
-    buffer_downshift (args.protect_size, args.read.buffer, args.line->end + sep_len);
+    buffer_downshift_protect (args.protect_size, args.read.buffer, args.line->end + sep_len);
 
 readnew:
     while (0 < (size = keyargs_func_name(buffer_read) (args.read)))
@@ -260,5 +260,14 @@ readnew:
 
 void buffer_getline_end (size_t protect_size, const char * sep, range_char * line, buffer_char * buffer)
 {
-    buffer_downshift (protect_size, buffer, line->end + strlen(sep));
+    buffer_downshift_protect (protect_size, buffer, line->end + strlen(sep));
+}
+
+void buffer_strcpy (buffer_char * to, const char * input)
+{
+    size_t size = strlen(input) + 1;
+    buffer_resize (*to, size);
+    memcpy (to->begin, input, size - 1);
+    to->end--;
+    *to->end = '\0';
 }

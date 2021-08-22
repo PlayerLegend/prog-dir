@@ -4,6 +4,7 @@ test/list-tar: src/tar/test/list-tar.test.o
 test/list-tar: src/tar/tar.o
 test/list-tar test/tar-dump-posix-header: src/buffer_io/buffer_io.o
 test/list-tar test/tar-dump-posix-header: src/log/log.o
+test/list-tar test/tar-dump-posix-header: src/array/buffer.o
 
 
 test/run-list-tar: src/tar/test/list-tar.test.sh

@@ -30,7 +30,7 @@ int filebuffer(buffer_char * filename, int in_fd)
     while (0 < (size = buffer_read (.fd = in_fd, .buffer = &file_buffer, .max_buffer_size = BUFFER_IO_SMALL)))
     {
 	wrote_size = 0;
-	while (0 < (size = buffer_write (.fd = tmp_fd, .buffer = &file_buffer, .wrote_size = &wrote_size)))
+	while (0 < (size = buffer_write (.fd = tmp_fd, .buffer = &file_buffer.range_cast.const_cast, .wrote_size = &wrote_size)))
 	{	    
 	}
 

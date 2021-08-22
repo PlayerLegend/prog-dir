@@ -26,7 +26,7 @@ int main()
     while (0 < (size = buffer_read (.fd = fd, .buffer = &write_buffer, .max_buffer_size = BUFFER_IO_SMALL)))
     {
 	wrote_size = 0;
-	while (0 < (size = buffer_write (.fd = STDOUT_FILENO, .buffer = &write_buffer, .wrote_size = &wrote_size)))
+	while (0 < (size = buffer_write (.fd = STDOUT_FILENO, .buffer = &write_buffer.range_cast.const_cast, .wrote_size = &wrote_size)))
 	{	    
 	}
 

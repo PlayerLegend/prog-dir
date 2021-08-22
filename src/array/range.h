@@ -2,7 +2,7 @@
 #define FLAT_INCLUDES
 #endif
 
-#define range(type,...)				\
+#define range(type)				\
     { type *begin; type *end; }
 
 #define range_count(range)			\
