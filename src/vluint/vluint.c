@@ -52,7 +52,7 @@ keyargs_define(vluint_read)
 	power *= VLUINT_CHAR_MAX;
     }
 
-    log_error ("vluint is truncated");
+    //log_error ("vluint is truncated");
 
     return false;
 }
@@ -60,7 +60,7 @@ keyargs_define(vluint_read)
 void vluint_write(buffer_unsigned_char * output, vluint_result n)
 {
     //buffer_rewrite (*output);
-    
+
     while (n >= VLUINT_CHAR_MAX)
     {
 	*buffer_push(*output) = (n % VLUINT_CHAR_MAX) | VLUINT_CHAR_MAX;

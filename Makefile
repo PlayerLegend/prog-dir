@@ -212,6 +212,7 @@ src/blkd/blkd-cache-io.o: src/array/range.h src/list/list.h src/blkd/blkd.h
 src/blkd/blkd-cache-io.o: src/blkd/blkd-cache-io.h src/table/table.h
 src/blkd/blkd-fuse.o: src/blkd/blkd.h
 src/blkd/blkd-direct-io.o: src/blkd/blkd.h
+src/buffer_stream/buffer_stream.o: src/array/range.h src/array/buffer.h
 src/file/file.o: src/array/range.h src/array/buffer.h src/file/file.h
 src/file/test/file.test.o: src/array/range.h src/array/buffer.h
 src/file/test/file.test.o: src/file/file.h src/test/debug.h

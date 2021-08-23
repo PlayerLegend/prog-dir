@@ -10,5 +10,5 @@ bin/benchmark-compression-utils: src/dzip/test/compression-benchmarks.sh
 
 UTILS_C += bin/dzip
 UTILS_SH += bin/benchmark-compression-utils
-BENCHMARKS_C += bin/dzip-benchmark
-#TESTS_C += bin/dzip-benchmark
+#BENCHMARKS_C += bin/dzip-benchmark
+TESTS_C += bin/dzip-benchmark

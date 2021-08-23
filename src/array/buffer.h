@@ -8,13 +8,13 @@
 
 #define buffer(type) { struct range(type); type * max; }
 
-#define buffer_typedef(buffertype,name)					\
-    typedef union { struct buffer(buffertype); range_##name range_cast; } buffer_##name; \
+#define buffer_typedef(buffertype,name,...)				\
+    typedef union { struct buffer(buffertype); range_##name range_cast; __VA_ARGS__; } buffer_##name; \
     typedef union { struct buffer(const buffertype); range_##name range_cast; } buffer_const_##name;
 
 buffer_typedef(void,void);
 buffer_typedef(char,char);
-buffer_typedef(unsigned char,unsigned_char);
+buffer_typedef(unsigned char,unsigned_char, buffer_char char_cast;);
 buffer_typedef(char*,string);
 
 int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_count);

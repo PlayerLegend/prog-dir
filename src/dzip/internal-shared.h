@@ -11,14 +11,12 @@
 typedef enum {
     DZIP_CMD_LITERAL,
     DZIP_CMD_LZ77,
-    DZIP_CMD_REPEAT,
 }
     dzip_command;
 
 typedef struct {
     vluint_result distance;
     vluint_result length;
-    char next_char;
 }
     dzip_match;
 

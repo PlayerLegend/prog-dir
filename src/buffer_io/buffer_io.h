@@ -25,10 +25,19 @@
 long int buffer_printf(buffer_char * buffer, const char * str, ...);
 long int buffer_printf_append(buffer_char * buffer, const char * str, ...);
 
-keyargs_declare(long int, buffer_read, buffer_char * buffer; size_t max_buffer_size; size_t initial_alloc_size; int fd;);
+keyargs_declare(long int, buffer_read,
+		buffer_char * buffer;
+		size_t max_buffer_size;
+		size_t initial_alloc_size;
+		int fd;);
+
 #define buffer_read(...) keyargs_call(buffer_read, __VA_ARGS__)
 
-keyargs_declare(long int, buffer_write, range_const_char * buffer; size_t * wrote_size; int fd;);
+keyargs_declare(long int, buffer_write,
+		range_const_char * buffer;
+		size_t * wrote_size;
+		int fd;);
+
 #define buffer_write(...) keyargs_call(buffer_write, __VA_ARGS__)
 
 keyargs_declare(bool, buffer_getline_fd,

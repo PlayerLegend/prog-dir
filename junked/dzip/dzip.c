@@ -398,3 +398,14 @@ void dzip_deflate_print_stats (dzip_deflate_state * state)
     log_stderr ("Longest match: %zu", state->stats.longest_match);
     log_stderr ("Match / Literal size ratio: %lf", (double)state->stats.match_size / (double)state->stats.literal_size);
 }
+
+/*static void print_int(const char * message, int n)
+{
+    static int number;
+
+    if (number != n)
+    {
+	number = n;
+	log_debug ("%s: %d", message,  n);
+    }
+    }*/

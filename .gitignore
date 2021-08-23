@@ -7,3 +7,4 @@ Makefile.bak
 init
 *.o
 *.xz
+perf.*

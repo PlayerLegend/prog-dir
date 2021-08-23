@@ -32,11 +32,11 @@
 	(range).end = (range).begin + count;				\
     }
 
-#define range_typedef(rangetype, name)		\
-    typedef struct range(const rangetype) range_const_##name;	\
-    typedef union { struct range(rangetype); range_const_##name const_cast; } range_##name;
+#define range_typedef(rangetype, name, ...)			\
+    typedef union { struct range(const rangetype); __VA_ARGS__; } range_const_##name; \
+    typedef union { struct range(rangetype); range_const_##name const_cast; __VA_ARGS__; } range_##name;
 
 range_typedef (char, char);
-range_typedef (unsigned char, unsigned_char);
+range_typedef (unsigned char, unsigned_char, range_char char_cast);
 range_typedef (char*, string);
 range_typedef (void, void);

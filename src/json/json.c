@@ -406,7 +406,7 @@ success:
 
 json_value * json_parse (const char * begin, const char * end)
 {
-    range_const_char text = { begin, end };
+    range_const_char text = { .begin = begin, .end = end };
     buffer_char buffer = {0};
 
     json_value * value = calloc (1, sizeof(*value));
