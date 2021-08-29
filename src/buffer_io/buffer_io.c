@@ -12,6 +12,78 @@
 #include "buffer_io.h"
 #include "../log/log.h"
 
+inline static long int read_alloc_size (buffer_char * buffer, int fd)
+{
+    assert (buffer->end < buffer->max - 1);
+
+    size_t fill_size = buffer->max - 1 - buffer->end;
+    size_t have_size = range_count (*buffer);
+
+    assert (fill_size + have_size == (size_t)(buffer->max - 1 - buffer->begin));
+
+    char * fill_point = buffer->begin;
+    buffer->end = buffer->begin + have_size + fill_size;
+    return read (fd, fill_point, fill_size);
+}
+
+keyargs_define(buffer_read)
+{
+    assert (args.buffer);
+    
+    size_t have_size = range_count(*args.buffer);
+    char * fill_point = 0;
+    size_t fill_size = 0;
+
+    size_t max_buffer_size = args.max_buffer_size ? args.max_buffer_size : -1;
+
+    if (have_size >= max_buffer_size)
+    {
+	*buffer_push (*args.buffer) = '\0';
+	args.buffer->end--;
+	return 0;
+    }
+    else if (args.buffer->max && args.buffer->end < args.buffer->max - 1)
+    {
+	fill_point = args.buffer->end;
+	fill_size = (args.buffer->max - 1) - fill_point;
+    }
+    else
+    {
+	fill_size = have_size ? have_size : (args.initial_alloc_size ? args.initial_alloc_size : 1000);
+	size_t new_size = have_size + fill_size + 1;
+
+	if (0 > buffer_resize (*args.buffer, new_size))
+	{
+	    return -1;
+	}
+	
+	fill_point = args.buffer->begin + have_size;
+    }
+
+    if (have_size + fill_size > max_buffer_size)
+    {
+	fill_size = max_buffer_size - have_size;
+    }
+    
+    ssize_t read_result = read (args.fd, fill_point, fill_size);
+
+    if (read_result < 0)
+    {
+	perror ("buffer_read");
+	return read_result;
+    }
+
+    args.buffer->end = fill_point + read_result;
+    assert (args.buffer->end >= args.buffer->begin);
+    assert (args.buffer->max);
+    assert (fill_point + fill_size <= args.buffer->max - 1);
+    assert (args.buffer->end <= args.buffer->max - 1);
+    *args.buffer->end = '\0';
+
+    return read_result;
+}
+
+ /*
 keyargs_define(buffer_read)
 {
     assert (args.buffer);
@@ -25,12 +97,18 @@ keyargs_define(buffer_read)
 	*args.buffer->end = '\0';
 	return 0;
     }
-    
-    size_t add_size = have_size;
 
-    if (!add_size)
+    //size_t alloc_size = args.buffer->max - args.buffer->begin;
+    
+    size_t min_add_size = args.initial_alloc_size ? args.initial_alloc_size : 1000;
+    size_t add_size = have_size;
+    
+    //log_debug ("add size: %zu vs %zu", min_add_size, min_add_size);
+
+    if (add_size < min_add_size)
     {
 	add_size = args.initial_alloc_size ? args.initial_alloc_size : 1000;
+	//add_size = min_add_size;
     }
 
     size_t new_size = have_size + add_size + 1;
@@ -60,7 +138,7 @@ keyargs_define(buffer_read)
     *args.buffer->end = '\0';
 
     return retval;
-}
+    }*/
 
 keyargs_define(buffer_write)
 {

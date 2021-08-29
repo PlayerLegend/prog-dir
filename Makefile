@@ -16,6 +16,7 @@ include $(SUB_MAKEFILES)
 
 debug tests test: CFLAGS += -ggdb -Wall -Werror
 utils benchmarks: CFLAGS += -DNDEBUG
+benchmarks: CFLAGS += -O2
 
 utils debug: $(UTILS_C) $(UTILS_SH)
 debug: $(TESTS_C) $(TESTS_SH)
@@ -85,30 +86,14 @@ src/metahash/metahash.o: src/keyargs/keyargs.h src/array/range.h
 src/metahash/metahash.o: src/array/buffer.h src/buffer_io/buffer_io.h
 src/metahash/metahash.o: src/vluint/vluint.h src/metahash/metahash.h
 src/metahash/metahash.o: src/log/log.h
-src/dzip/dzip.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
-src/dzip/inflate.old.o: src/array/range.h src/array/buffer.h
-src/dzip/inflate.old.o: src/keyargs/keyargs.h src/dzip/dzip.h
-src/dzip/inflate.old.o: src/vluint/vluint.h src/dzip/internal-shared.h
-src/dzip/inflate.old.o: src/log/log.h
-src/dzip/test/dzip-deflate.test.o: src/array/range.h src/array/buffer.h
-src/dzip/test/dzip-deflate.test.o: src/keyargs/keyargs.h
-src/dzip/test/dzip-deflate.test.o: src/buffer_io/buffer_io.h src/dzip/dzip.h
-src/dzip/dzip.util.o: src/array/range.h src/array/buffer.h
-src/dzip/dzip.util.o: src/keyargs/keyargs.h src/dzip/dzip.h
-src/dzip/dzip.util.o: src/buffer_io/buffer_io.h src/log/log.h
-src/dzip/deflate.o: src/array/range.h src/array/buffer.h
-src/dzip/deflate.o: src/keyargs/keyargs.h src/dzip/dzip.h src/vluint/vluint.h
-src/dzip/deflate.o: src/dzip/internal-shared.h src/log/log.h
-src/dzip/inflate.o: src/array/range.h src/array/buffer.h
-src/dzip/inflate.o: src/keyargs/keyargs.h src/dzip/dzip.h src/vluint/vluint.h
-src/dzip/inflate.o: src/dzip/internal-shared.h src/log/log.h
-src/dzip/dzip.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
-src/dzip/dzip.o: src/dzip/dzip.h src/log/log.h src/vluint/vluint.h
-src/dzip/dzip.old.o: src/array/range.h src/array/buffer.h
-src/dzip/dzip.old.o: src/keyargs/keyargs.h src/dzip/dzip.h src/log/log.h
-src/dzip/dzip.old.o: src/vluint/vluint.h src/sliding-window/sliding-window.h
-src/dzip/internal-shared.o: src/array/range.h src/array/buffer.h
-src/dzip/internal-shared.o: src/keyargs/keyargs.h src/vluint/vluint.h
+src/dzip/test/dzip-benchmark.test.o: src/array/range.h src/array/buffer.h
+src/dzip/test/dzip-benchmark.test.o: src/keyargs/keyargs.h
+src/dzip/test/dzip-benchmark.test.o: src/buffer_io/buffer_io.h
+src/dzip/test/dzip-benchmark.test.o: src/dzip/dzip.h src/log/log.h
+src/dzip/dzip.o: src/keyargs/keyargs.h src/array/range.h src/array/buffer.h
+src/dzip/deflate.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/deflate.o: src/array/buffer.h src/dzip/dzip.h src/dzip/internal.h
+src/dzip/deflate.o: src/log/log.h
 src/sliding-window/test/sliding-window.test.o: src/array/range.h
 src/sliding-window/test/sliding-window.test.o: src/array/buffer.h
 src/sliding-window/test/sliding-window.test.o: src/sliding-window/sliding-window.h

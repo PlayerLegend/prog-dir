@@ -29,4 +29,3 @@ buffer_stream_typedef(char*,string);
 
 #define buffer_stream_pointer_check(buffer_stream, pointer)	\
     ( (buffer_stream).begin <= (pointer) && (pointer) < (buffer_stream).end )
-

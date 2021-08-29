@@ -409,3 +409,105 @@ void dzip_deflate_print_stats (dzip_deflate_state * state)
 	log_debug ("%s: %d", message,  n);
     }
     }*/
+
+inline static void update_frequent_bytes (dzip_deflate_state * state)
+{
+    unsigned char * byte = state->frequent_literal_bytes;
+    unsigned char * max = state->frequent_literal_bytes + sizeof(state->frequent_literal_bytes);
+    while (byte < max)
+    {
+	*byte = byte - state->frequent_literal_bytes;
+	byte++;
+    }
+
+    dzip_size * frequency = state->literal_byte_rate + sizeof(state->frequent_literal_bytes);
+    dzip_size * frequency_max = state->literal_byte_rate + 256;
+    unsigned char * choose;    
+    dzip_size choose_frequency;
+    dzip_size byte_frequency;
+    
+    while (frequency < frequency_max)
+    {
+	//log_debug ("frequency[%zu]: %zu", frequency - state->literal_byte_rate, *frequency);
+	
+	choose = state->frequent_literal_bytes;
+	choose_frequency = state->literal_byte_rate[*choose];
+	byte = choose + 1;
+	while (byte < max)
+	{
+	    byte_frequency = state->literal_byte_rate[*byte];
+	    //log_debug ("byte: %zu = %zu", *byte, byte_frequency);
+	    
+	    if (choose_frequency > byte_frequency)
+	    {
+		choose_frequency = byte_frequency;
+		//log_debug ("here");
+		choose = byte;
+	    }
+	    
+	    byte++;
+	}
+
+	//log_debug ("chose %zu = %zu", choose - state->frequent_literal_bytes, choose_frequency);
+	    
+	byte_frequency = *frequency;
+
+	if (choose_frequency < byte_frequency)
+	{
+	    //log_debug ("update %zu = %zu", choose - state->frequent_literal_bytes, frequency - state->literal_byte_rate);
+	    *choose = frequency - state->literal_byte_rate;
+	}
+
+	frequency++;
+    }
+}
+
+inline static bool frequent_byte_index (dzip_size * index, dzip_deflate_state * state, unsigned char byte)
+{
+    unsigned char * i = state->frequent_literal_bytes;
+    unsigned char * max = state->frequent_literal_bytes + sizeof (state->frequent_literal_bytes);
+
+    while (i < max)
+    {
+	if (*i == byte)
+	{
+	    *index = i - state->frequent_literal_bytes;
+	    return true;
+	}
+	i++;
+    }
+
+    return false;
+}
+
+    /*
+      const unsigned char * window_min = buffer_stream_pointer (state->stream.input, state->stream.bytes_read - state->compression_parameters.window_size);
+      const unsigned char * literal_min = buffer_stream_pointer (state->stream.input, state->literal_start);
+      const unsigned char * recent_min = buffer_stream_pointer (state->stream.input, state->recent_new_start);
+
+      const unsigned char * overall_min = window_min;
+
+      if (overall_min > literal_min)
+      {
+      overall_min = literal_min;
+      }
+
+      if (overall_min > recent_min)
+      {
+      overall_min = recent_min;
+      }
+
+      if (overall_min > state->stream.input.end)
+      {
+      assert (false);
+      return 0;
+      }
+
+      if (overall_min > state->stream.input.begin)
+      {
+      return range_index(overall_min, state->stream.input);
+      }
+      else
+      {
+      return 0;
+      }*/

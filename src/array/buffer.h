@@ -20,18 +20,14 @@ buffer_typedef(char*,string);
 int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_count);
 
 #define buffer_realloc(buffer, count)					\
-    {                                                                   \
-	if ( (size_t)((buffer).max - (buffer).begin) <= (size_t)(count) ) \
-        {                                                               \
-            _buffer_resize ((buffer_void*)&(buffer), sizeof (*(buffer).begin), (count) * 2); \
-        }                                                               \
-    }
+    (( (size_t)((buffer).max - (buffer).begin) <= (size_t)(count) )	\
+     ? _buffer_resize ((buffer_void*)&(buffer), sizeof (*(buffer).begin), (count) * 2) \
+     : 0)
 
 #define buffer_resize(buffer, count)			\
-    {							\
-        buffer_realloc (buffer, count);			\
-        (buffer).end = (buffer).begin + (count);        \
-    }
+    ((0 == buffer_realloc (buffer, count))		\
+     ? ((buffer).end = (buffer).begin + (count), 0)	\
+     : -1)
 
 #define buffer_push(buffer)						\
     ((buffer).end == (buffer).max ? _buffer_resize ( (buffer_void*)&(buffer), sizeof (*(buffer).begin), 10 + ((buffer).max - (buffer).begin) * 3 ), (buffer).end++ : (buffer).end++)

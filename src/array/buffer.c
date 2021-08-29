@@ -13,6 +13,7 @@ int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_co
     if (!new_region)
     {
 	perror ("realloc");
+	fflush (stderr);
 	return -1;
     }
     size_t range_size = range_count (*expand_buffer);
