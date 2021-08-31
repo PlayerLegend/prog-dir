@@ -47,7 +47,7 @@ static void write_command (buffer_char * output, unsigned char command, unsigned
 
     if (arg < 32)
     {
-	*buffer_push (*output) = command | DZIP_ARG1_EXTEND_BIT | (arg << (16 - DZIP_ARG1_BITS));
+	*buffer_push (*output) = command |DZIP_ARG1_EXTEND_BIT | (arg << (16 - DZIP_ARG1_BITS));
     }
     else
     {
@@ -110,18 +110,17 @@ inline static void find_match (dzip_match * restrict match, dzip_deflate_state *
     }
     
     dzip_window_point * best_point_p = state->match_best + (*(uint64_t*) input->begin) % count_array (state->match_best);
+    dzip_match best_match;
+    setup_match (&best_match, &state->window, *best_point_p, input->begin, input_size);
+    
+    if (best_match.length >= 8)
+    {
+	goto use_best;
+    }
     
     dzip_match recent_match;
     setup_match (&recent_match, &state->window, state->match_recent[(*(uint16_t*) input->begin) % count_array (state->match_recent)], input->begin, input_size);
 
-    //if (recent_match.length)
-    {
-	goto use_recent;
-    }
-    
-    dzip_match best_match;
-    setup_match (&best_match, &state->window, *best_point_p, input->begin, input_size);
-    
     if (best_match.length > recent_match.length)
     {
 	goto use_best;
@@ -138,10 +137,7 @@ use_best:
 
 use_recent:
     *match = recent_match;
-    if (recent_match.length >= 10)
-    {
-	*best_point_p = recent_match.point;
-    }
+    *best_point_p = recent_match.point;
     return;
 }
 
