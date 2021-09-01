@@ -11,7 +11,12 @@ typedef enum {
 
 
 typedef uint16_t dzip_window_point;
-typedef char dzip_window[65535];
+
+typedef struct {
+    char begin[65536];
+    dzip_window_point point;
+}
+    dzip_window;
 
 #define DZIP_ARG1_BITS 13
 #define DZIP_ARG1_MAX (1 << DZIP_ARG1_BITS)
