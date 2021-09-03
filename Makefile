@@ -86,14 +86,29 @@ src/metahash/metahash.o: src/keyargs/keyargs.h src/array/range.h
 src/metahash/metahash.o: src/array/buffer.h src/buffer_io/buffer_io.h
 src/metahash/metahash.o: src/vluint/vluint.h src/metahash/metahash.h
 src/metahash/metahash.o: src/log/log.h
+src/dzip/deflate.match.bad.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/deflate.match.bad.o: src/array/buffer.h src/dzip/dzip.h
+src/dzip/deflate.match.bad.o: src/dzip/internal.h src/log/log.h
+src/dzip/deflate.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/deflate.o: src/array/buffer.h src/dzip/dzip.h src/dzip/internal.h
+src/dzip/deflate.o: src/log/log.h
+src/dzip/inflate.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/inflate.o: src/array/buffer.h src/dzip/dzip.h src/dzip/internal.h
+src/dzip/inflate.o: src/log/log.h
+src/dzip/dzip.o: src/keyargs/keyargs.h src/array/range.h src/array/buffer.h
+src/dzip/dzip.util.o: src/array/range.h src/array/buffer.h
+src/dzip/dzip.util.o: src/keyargs/keyargs.h src/dzip/dzip.h
+src/dzip/dzip.util.o: src/buffer_io/buffer_io.h src/log/log.h
+src/dzip/deflate.okay.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/deflate.okay.o: src/array/buffer.h src/dzip/dzip.h
+src/dzip/deflate.okay.o: src/dzip/internal.h src/log/log.h
+src/dzip/deflate.good.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/deflate.good.o: src/array/buffer.h src/dzip/dzip.h
+src/dzip/deflate.good.o: src/dzip/internal.h src/log/log.h
 src/dzip/test/dzip-benchmark.test.o: src/array/range.h src/array/buffer.h
 src/dzip/test/dzip-benchmark.test.o: src/keyargs/keyargs.h
 src/dzip/test/dzip-benchmark.test.o: src/buffer_io/buffer_io.h
 src/dzip/test/dzip-benchmark.test.o: src/dzip/dzip.h src/log/log.h
-src/dzip/dzip.o: src/keyargs/keyargs.h src/array/range.h src/array/buffer.h
-src/dzip/deflate.o: src/keyargs/keyargs.h src/array/range.h
-src/dzip/deflate.o: src/array/buffer.h src/dzip/dzip.h src/dzip/internal.h
-src/dzip/deflate.o: src/log/log.h
 src/sliding-window/test/sliding-window.test.o: src/array/range.h
 src/sliding-window/test/sliding-window.test.o: src/array/buffer.h
 src/sliding-window/test/sliding-window.test.o: src/sliding-window/sliding-window.h

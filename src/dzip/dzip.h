@@ -22,7 +22,7 @@ keyargs_declare (void, dzip_deflate,
 		 const range_const_char * input;
 		 dzip_deflate_state * state;);
 
-#define dzip_deflate(...) keyargs_call (dzip_deflate, __VA_ARGS__);
+#define dzip_deflate(...) keyargs_call (dzip_deflate, __VA_ARGS__)
 
 // inflate
 
@@ -35,6 +35,6 @@ keyargs_declare (bool, dzip_inflate,
 		 const range_const_char * input;
 		 dzip_inflate_state * state;);
 
-#define dzip_inflate(...) keyargs_call (dzip_inflate, __VA_ARGS__);
+#define dzip_inflate(...) keyargs_call (dzip_inflate, __VA_ARGS__)
 
 void dzip_print_stats();
