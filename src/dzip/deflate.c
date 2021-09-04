@@ -20,7 +20,7 @@ dzip_size stat_literal_count,
     stat_literal_length,
     stat_match_count,
     stat_match_length,
-    stat_match_distance,
+//    stat_match_distance,
     stat_bytes_in,
     stat_bytes_out;
 #endif
@@ -115,21 +115,22 @@ inline static void add_state_byte (buffer_char * output, dzip_deflate_state * st
 
     if (!match_length || future.byte != reference_window_byte (state->past.window, state->match_from_begin + match_length) || match_length == DZIP_ARG1_EXTEND_MASK || literal_length == DZIP_ARG1_EXTEND_MASK)
     {
-	dzip_window_point match_distance;
+	//dzip_window_point match_distance;
 	
 	if (4 < match_length)
 	{
-	    match_distance = (state->match_to_begin - state->match_from_begin) % count_array (state->past.window);
+	    //match_distance = (state->match_to_begin - state->match_from_begin) % count_array (state->past.window);
 	    
 	    finalize_literal(output, state);
 
 	    write_command (output, DZIP_CMD_MATCH, match_length);
-	    write_point (output, match_distance);
+	    //write_point (output, match_distance);
+	    write_point (output, state->match_from_begin);
 
 #ifdef DZIP_RECORD_STATS
 	    stat_match_count++;
 	    stat_match_length += match_length;
-	    stat_match_distance += match_distance;
+	    //stat_match_distance += match_distance;
 #endif
 
 	    assert (state->match_to_begin + match_length == state->past.bytes_read);

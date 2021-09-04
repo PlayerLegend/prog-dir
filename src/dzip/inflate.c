@@ -37,7 +37,7 @@ struct dzip_inflate_state
     };
     
     union {
-	dzip_window_point arg2, match_distance;
+	dzip_window_point arg2, match_point;
 	unsigned char arg2_bytes[sizeof(dzip_window_point)];
     };
     
@@ -188,7 +188,7 @@ keyargs_define(dzip_inflate)
 	if (args.state->command_bytes == sizeof(args.state->arg2))
 	{
 	    args.state->command_bytes = 0;
-	    if (args.state->match_distance >= count_array(args.state->past.window))
+	    if (args.state->match_point >= count_array(args.state->past.window))
 	    {
 		log_fatal ("Match point exceeds window length");
 	    }
@@ -204,7 +204,7 @@ keyargs_define(dzip_inflate)
     case INFLATE_READ_MATCH_CONTENTS:
     INFLATE_READ_MATCH_CONTENTS:
 	//log_debug ("copy %zu/%zu", args.state->command_bytes, args.state->match_length);
-	copy_byte = reference_window_byte(args.state->past.window, args.state->bytes_written - args.state->match_distance % count_array(args.state->past.window));
+	copy_byte = reference_window_byte(args.state->past.window, args.state->match_point + args.state->command_bytes);
 	reference_window_byte(args.state->past.window, args.state->bytes_written) = copy_byte;
 	*buffer_push (*args.output) = copy_byte;
 	args.state->bytes_written++;
