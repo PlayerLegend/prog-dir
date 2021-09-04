@@ -13,8 +13,7 @@ typedef enum {
 //typedef uint32_t dzip_window_point;
 //typedef char dzip_window[1000000];
 typedef uint16_t dzip_window_point;
-typedef char dzip_window[65536];
-//typedef char dzip_window[];
+typedef char dzip_window[65535];
 
 #define DZIP_COMMAND_BITS 2
 #define DZIP_EXTEND_BITS 1
@@ -36,6 +35,9 @@ typedef char dzip_window[65536];
 #define sizeof_member(type, member) sizeof( ((type*)0)->member )
 
 #define count_array(array) (sizeof(array) / sizeof((array)[0]))
+
+#define reference_past_point(past, index)			\
+    ( (past).recent[(index) % count_array((past).recent)] )
 
 #define reference_window_byte(window, index)		\
     ( (window)[ (count_array(window) + (index)) % count_array(window) ] )
