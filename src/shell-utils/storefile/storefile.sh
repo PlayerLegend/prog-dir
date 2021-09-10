@@ -49,10 +49,10 @@ cmd_path() {
 	exit 1
     fi
 
-    if ! check_path
-    then
-	exit 1
-    fi
+    #if ! check_path
+    #then
+#	exit 1
+#    fi
 
     echo "$path"
 }

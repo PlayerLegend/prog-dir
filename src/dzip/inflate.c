@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 #define FLAT_INCLUDES
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
@@ -9,16 +10,10 @@
 #include "dzip.h"
 #include "internal.h"
 #include "../log/log.h"
-
-typedef struct {
-    dzip_window window;
-}
-    dzip_past;
+#include "../vluint/vluint.h"
 
 struct dzip_inflate_state
 {
-    dzip_past past;
-    
     enum {
 	INFLATE_READ_HEADER,
 	INFLATE_READ_CMD,
@@ -37,8 +32,7 @@ struct dzip_inflate_state
     };
     
     union {
-	dzip_window_point arg2, match_point;
-	unsigned char arg2_bytes[sizeof(dzip_window_point)];
+	vluint_result arg2, match_point;
     };
     
     dzip_size command_bytes, bytes_read, bytes_written;
@@ -53,177 +47,146 @@ dzip_inflate_state * dzip_inflate_state_new()
 
 keyargs_define(dzip_inflate)
 {
-    range_const_char input = *args.input;
-    char copy_byte;
-
-#define goto_next(job_id)			\
-    {	/*log_debug("Job: %zu [%zu]", job_id, args.state->bytes_read + 1);*/ \
-	input.begin++;				\
-	args.state->bytes_read++;		\
-	if (input.begin < input.end)		\
-	{					\
-	    goto job_id;			\
-	}					\
-	else					\
-	{					\
-	    args.state->job = job_id;		\
-	    goto need_more_bytes;		\
-	}					\
+    char test_magic[] = DZIP_MAGIC_INITIALIZER;
+    if (0 != memcmp (test_magic, args.chunk->header.magic, sizeof(test_magic)))
+    {
+	log_fatal ("Invalid magic in dzip chunk");
     }
 
-    switch (args.state->job)
+    if (args.chunk->header.version != DZIP_VERSION)
     {
-    case INFLATE_READ_HEADER:
-    INFLATE_READ_HEADER:
+	log_fatal ("Incorrect version in dzip header");
+    }
 
-	if (args.state->bytes_read > 7)
-	{
-	    log_fatal ("Header reading code started after header position in stream");
-	}
-	else
-	{
-	    args.state->magic[args.state->bytes_read] = *input.begin;
+    assert (args.chunk->bytes == (const unsigned char *) args.chunk + sizeof(dzip_header));
+    
+    range_const_unsigned_char input = { .begin = args.chunk->bytes, .end = ((const unsigned char*) args.chunk) + args.chunk->header.chunk_size };
 
-	    if (args.state->bytes_read == 7)
-	    {
-		if (*(uint64_t*) args.state->magic != *(uint64_t*) "deezwhat")
-		{
-		    log_fatal ("Invalid header magic in stream - this is not a dzip stream");
-		}
-		else
-		{
-		    goto_next(INFLATE_READ_CMD);
-		}
-	    }
-	}
+    if (range_count (input) <= 0)
+    {
+	log_fatal ("Invalid size in dzip header");
+    }
 
-	goto_next(INFLATE_READ_HEADER);
-	assert(false);
-	
-    case INFLATE_READ_CMD:
-    INFLATE_READ_CMD:
-	args.state->cmd = *input.begin & DZIP_COMMAND_MASK;
-	args.state->arg1 = (*input.begin >> DZIP_META_BITS) & DZIP_ARG1_COMPACT_MASK;
-	
-	assert (args.state->arg1 < DZIP_ARG1_COMPACT_MAX);
+    char cmd;
+    
+    vluint_result arg1;
+    vluint_result arg2;
 
-	if (*input.begin & DZIP_ARG1_EXTEND_BIT)
-	{
-	    //log_debug ("Read command extended: %zu %zu", args.state->cmd, args.state->arg1);
-	    goto_next(INFLATE_EXTEND_ARG1);
-	}
-	else
-	{
-	    //log_debug ("Read command(%zu): %zu %zu [%zu] [%zu]", *input.begin, args.state->cmd, args.state->arg1, args.state->bytes_read, input.begin - args.input->begin);
-	    goto INFLATE_SELECT_JOB;
-	}
-	assert (false);
+    dzip_size output_size;
+    unsigned char copy;
+    bool extend;
 
-    case INFLATE_EXTEND_ARG1:
-    INFLATE_EXTEND_ARG1:
-	//{ log_debug ("extended: %u + (%u)(%u) = %u + %u = %u", args.state->arg1, DZIP_ARG1_COMPACT_MAX, (unsigned char)*input.begin, (unsigned short)(DZIP_ARG1_COMPACT_MAX * *input.begin)); }
-	args.state->arg1 += DZIP_ARG1_COMPACT_MAX * (unsigned char)*input.begin;
-	//log_debug ("extended: %zu", args.state->arg1);
-	assert (args.state->arg1 < DZIP_ARG1_EXTEND_MAX);
-	//goto_next(INFLATE_SELECT_JOB);
-	goto INFLATE_SELECT_JOB;
-	assert (false);
+read_cmd:
 
-    case INFLATE_SELECT_JOB:
-    INFLATE_SELECT_JOB:
-	args.state->command_bytes = 0;
+    if (range_is_empty(input))
+    {
+	return true;
+    }
 
-	if (args.state->arg1 == 0)
-	{
-	    log_fatal ("Command has null arg1");
-	}
+    //log_debug ("reading cmd %zu at %zu", *input.begin, input.begin - (const unsigned char*)args.chunk);
+    
+    cmd = *input.begin & DZIP_COMMAND_MASK;
+    arg1 = (*input.begin >> DZIP_META_BITS) & DZIP_ARG1_COMPACT_MASK;
+    extend = *input.begin & DZIP_ARG1_EXTEND_BIT;
+    
+    input.begin++;
 
-	if (args.state->cmd == DZIP_CMD_LITERAL)
-	{
-	    //log_debug ("reading literal: %zu", args.state->literal_length);
-	    goto_next (INFLATE_READ_LITERAL);
-	}
-	else if (args.state->cmd == DZIP_CMD_MATCH)
-	{
-	    //log_debug ("reading match: %zu", args.state->match_length);
-	    goto_next (INFLATE_READ_MATCH_POINT);
-	}
-	else
-	{
-	    log_fatal("Invalid command in dzip stream");
-	}
-	assert (false);
+    if (extend)
+    {
+	goto read_extended_arg1;
+    }
+    else
+    {
+	goto cmd_switch;
+    }
 
-    case INFLATE_READ_LITERAL:
-    INFLATE_READ_LITERAL:
-	
-	reference_window_byte(args.state->past.window, args.state->bytes_written) = *input.begin;
-	*buffer_push (*args.output) = *input.begin;
-	args.state->bytes_written++;
-	args.state->command_bytes++;
-	//log_debug ("literal[%zu]: %zu", args.state->bytes_read, (unsigned char)*input.begin);
+    assert(false);
 
-	if (args.state->command_bytes == args.state->literal_length)
-	{
-	    goto_next (INFLATE_READ_CMD);
-	}
-	else
-	{
-	    assert (args.state->command_bytes < args.state->literal_length);
-	    goto_next (INFLATE_READ_LITERAL);
-	}
-	assert (false);
+read_extended_arg1:
 
-    case INFLATE_READ_MATCH_POINT:
-    INFLATE_READ_MATCH_POINT:
+    //log_debug ("extended");
 
-	if (args.state->command_bytes >= sizeof(args.state->arg2))
-	{
-	    assert (false);
-	    log_fatal ("A bug has occurred while reading match point");
-	}
-
-	args.state->arg2_bytes[args.state->command_bytes++] = *input.begin;
-
-	if (args.state->command_bytes == sizeof(args.state->arg2))
-	{
-	    args.state->command_bytes = 0;
-	    if (args.state->match_point >= count_array(args.state->past.window))
-	    {
-		log_fatal ("Match point exceeds window length");
-	    }
-	    //goto_next(INFLATE_READ_MATCH_CONTENTS);
-	    goto INFLATE_READ_MATCH_CONTENTS;
-	}
-	else
-	{
-	    goto_next(INFLATE_READ_MATCH_POINT);
-	}
-	assert (false);
-
-    case INFLATE_READ_MATCH_CONTENTS:
-    INFLATE_READ_MATCH_CONTENTS:
-	//log_debug ("copy %zu/%zu", args.state->command_bytes, args.state->match_length);
-	copy_byte = reference_window_byte(args.state->past.window, args.state->match_point + args.state->command_bytes);
-	reference_window_byte(args.state->past.window, args.state->bytes_written) = copy_byte;
-	*buffer_push (*args.output) = copy_byte;
-	args.state->bytes_written++;
-	args.state->command_bytes++;
-
-	if (args.state->command_bytes == args.state->match_length)
-	{
-	    goto_next(INFLATE_READ_CMD);
-	}
-	else
-	{
-	    goto INFLATE_READ_MATCH_CONTENTS;
-	}
-	assert (false);
+    if (!vluint_read (.result = &arg2,
+		      .input = &input,
+		      .rest = &input))
+    {
+	log_fatal ("Truncated extended arg1");
     }
     
-need_more_bytes:
-    return true;
+    arg1 += DZIP_ARG1_COMPACT_MAX * arg2;
 
+    goto cmd_switch;
+
+cmd_switch:
+
+    //log_debug ("cmd switch %d %d", cmd, arg1);
+    
+    switch (cmd)
+    {
+    case DZIP_CMD_LITERAL: goto read_literal;
+    case DZIP_CMD_MATCH: goto read_match;
+    default: log_fatal ("Invalid dzip command");
+    }
+
+    assert (false);
+
+read_literal:
+
+    //log_debug ("literal");
+    
+    if (arg1 == 0)
+    {
+	log_fatal ("dzip literal length is zero");
+    }
+
+    if (arg1 > (dzip_size)range_count(input))
+    {
+	log_fatal ("dzip literal length is too long");
+    }
+    
+    buffer_append_n (*args.output, input.begin, arg1);
+    
+    input.begin += arg1;
+
+    goto read_cmd;
+
+read_match:
+
+    //log_debug ("match");
+    
+    if (arg1 == 0)
+    {
+	log_fatal ("dzip match length is zero");
+    }
+
+    if (!vluint_read(.result = &arg2,
+		     .input = &input,
+		     .rest = &input))
+    {
+	log_fatal ("dzip match distance vluint is truncated");
+    }
+
+    if (arg2 == 0)
+    {
+	log_fatal ("dzip match distance is zero");
+    }
+
+    output_size = range_count(*args.output);
+    
+    if (arg2 > output_size)
+    {
+	log_fatal ("dzip match distance is too large");
+    }
+
+    while (arg1 > 0)
+    {
+	copy = args.output->end[-arg2];
+	*buffer_push(*args.output) = copy;
+	arg1--;
+    }
+
+    goto read_cmd;
+    
 fail:
     return false;
 }

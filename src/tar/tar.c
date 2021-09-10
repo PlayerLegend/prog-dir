@@ -67,7 +67,7 @@ static bool block_is_zero (const range_const_char * header)
 	    return false;
 	}
     }
-
+    
     return true;
 }
 
@@ -139,13 +139,6 @@ bool tar_update_mem (tar_state * state, range_const_char * rest, const range_con
 
 	longlink = true;
     }
-
-//    buffer_rewrite (state->header);
-    
-    /*if (!record_mem (&state->header, mem, TAR_BLOCK_SIZE))
-    {
-	goto notready;
-	}*/
 
     if (range_count (*mem) < TAR_BLOCK_SIZE)
     {

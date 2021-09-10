@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #define FLAT_INCLUDES
+#include "../keyargs/keyargs.h"
 #include "pkg.h"
 #include "../log/log.h"
 

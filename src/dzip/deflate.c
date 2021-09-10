@@ -10,9 +10,10 @@
 #include "dzip.h"
 #include "internal.h"
 #include "../log/log.h"
+#include "../vluint/vluint.h"
 
 //#ifndef NDEBUG
-//#define DZIP_RECORD_STATS
+#define DZIP_RECORD_STATS
 //#endif
 
 #ifdef DZIP_RECORD_STATS
@@ -20,40 +21,34 @@ dzip_size stat_literal_count,
     stat_literal_length,
     stat_match_count,
     stat_match_length,
-//    stat_match_distance,
+    stat_match_distance,
     stat_bytes_in,
     stat_bytes_out;
 #endif
 
-typedef uint64_t dzip_index;
+typedef uint32_t dzip_index;
 
 typedef struct {
-    dzip_window_point point;
-    dzip_window_point length;
+    dzip_size distance;
+    dzip_size length;
 }
     dzip_match;
 
-typedef struct {
-    dzip_size bytes_read;
-    dzip_window window;
-    dzip_window_point recent_point[16963];
-}
-    dzip_deflate_past;
-
 struct dzip_deflate_state {
-    dzip_deflate_past past;
+    dzip_size window_progress;
     dzip_size literal_begin;
-    dzip_size match_to_begin;
-    dzip_size match_from_begin;
+    dzip_match match;
+    dzip_size recent[16963];
 };
+
 #define reference_array(array, index)			\
     ( (array)[(index) % count_array(array)] )
 
-static void write_command (buffer_char * output, unsigned char command, unsigned short arg)
+static void write_command (buffer_unsigned_char * output, unsigned char command, dzip_size arg)
 {
-    assert (arg < DZIP_ARG1_EXTEND_MAX);
     assert (command < DZIP_COMMAND_MAX);
-
+    assert (arg > 0);
+    
     unsigned char header = (command & DZIP_COMMAND_MASK) | ( (arg % DZIP_ARG1_COMPACT_MAX) << DZIP_META_BITS );
     
     if (arg < DZIP_ARG1_COMPACT_MAX)
@@ -63,141 +58,158 @@ static void write_command (buffer_char * output, unsigned char command, unsigned
     else
     {
 	*buffer_push (*output) = header | DZIP_ARG1_EXTEND_BIT;
-	*buffer_push (*output) = arg / DZIP_ARG1_COMPACT_MAX;
+	vluint_write (output, arg / DZIP_ARG1_COMPACT_MAX);
     }
 }
 
-static void write_point (buffer_char * restrict output, dzip_window_point n)
+static void write_literal (buffer_unsigned_char * restrict output, dzip_deflate_state * state, const range_const_unsigned_char * window)
 {
-    buffer_append_n (*output, (const char*)&n, sizeof(n));
+    assert (state->literal_begin <= state->window_progress);
+    
+    if (state->literal_begin < state->window_progress)
+    {
+	assert (window->begin + state->window_progress <= window->end);
+	size_t length = state->window_progress - state->literal_begin;
+
+	write_command (output, DZIP_CMD_LITERAL, length);
+	const unsigned char * begin = window->begin + state->literal_begin;
+	assert (begin + length <= window->end);
+	buffer_append_n (*output, begin, length);
+	state->literal_begin = state->window_progress;
+
+#ifdef DZIP_RECORD_STATS
+	stat_literal_count++;
+	stat_literal_length += length;
+#endif
+    }
 }
 
-inline static void finalize_literal (buffer_char * output, dzip_deflate_state * state)
+static void write_match (buffer_unsigned_char * restrict output, dzip_deflate_state * state)
 {
-    assert (state->match_to_begin >= state->literal_begin);
+    assert (state->match.length);
+    
+    write_command (output, DZIP_CMD_MATCH, state->match.length);
+    vluint_write (output, state->match.distance);
+    state->window_progress += state->match.length;
+    state->literal_begin = state->window_progress;
 
-    dzip_window_point literal_length = state->match_to_begin - state->literal_begin;
+    assert (state->match.distance > 0);
+    
+#ifdef DZIP_RECORD_STATS
+    stat_match_count++;
+    stat_match_length += state->match.length;
+    stat_match_distance += state->match.distance;
+#endif
+}
 
-    if (!literal_length)
+static void check_match (dzip_match * match, range_const_unsigned_char * scan)
+{
+    const unsigned char * i;
+
+    for_range (i, *scan)
     {
+	if (i[0] != i[-(size_t)match->distance])
+	{
+	    break;
+	}
+    }
+
+    match->length = i - scan->begin;
+}
+
+static void setup_match (dzip_deflate_state * state, const range_const_unsigned_char * window)
+{
+    range_const_unsigned_char scan = { .begin = window->begin + state->window_progress, .end = window->end };
+    
+    dzip_index * index = (void*) scan.begin;
+
+    assert ((int)sizeof(*index) <= range_count (scan));
+    
+    dzip_size * recent = &reference_array(state->recent, *index);
+
+    if (*recent >= state->window_progress)
+    {
+	*recent = state->window_progress;
+	state->match.length = 0;
 	return;
     }
-
-#ifdef DZIP_RECORD_STATS
-    stat_literal_count++;
-    stat_literal_length += literal_length;
-#endif
-
-    write_command (output, DZIP_CMD_LITERAL, literal_length);
     
-    while (state->literal_begin < state->match_to_begin)
-    {
-	*buffer_push(*output) = reference_window_byte (state->past.window, state->literal_begin);
-	state->literal_begin++;
-    }
+    state->match.distance = state->window_progress - *recent;
+
+    assert (state->match.distance > 0);
+
+    check_match (&state->match, &scan);
+
+    *recent = state->window_progress;
 }
 
-inline static void add_state_byte (buffer_char * output, dzip_deflate_state * state, const char * restrict input)
+inline static void deflate_chunk (buffer_unsigned_char * restrict output, dzip_deflate_state * restrict state, const range_const_unsigned_char * input)
 {
-    union {
-	dzip_index index;
-	unsigned char byte;
-    }
-    register future = { .index = *(dzip_index*) input };
+    dzip_size output_start = range_count(*output);
+    dzip_size window_size = range_count (*input);
 
-    dzip_window_point * recent_point = &reference_array(state->past.recent_point, future.index);
+    buffer_resize (*output, output_start + sizeof(dzip_header));
+    	
+    state->window_progress = 8;
+    state->literal_begin = 0;
 
-    dzip_window_point match_length = state->past.bytes_read - state->match_to_begin;
-    assert (state->past.bytes_read >= state->match_to_begin);
-    assert (state->match_to_begin >= state->match_from_begin);
-
-    dzip_window_point literal_length = state->past.bytes_read - state->literal_begin;
-
-    if (!match_length || future.byte != reference_window_byte (state->past.window, state->match_from_begin + match_length) || match_length == DZIP_ARG1_EXTEND_MASK || literal_length == DZIP_ARG1_EXTEND_MASK)
+    if (window_size > sizeof(dzip_index))
     {
-	//dzip_window_point match_distance;
-	
-	if (4 < match_length)
+	dzip_size max = window_size - sizeof(dzip_index);
+	while (state->window_progress < max)
 	{
-	    //match_distance = (state->match_to_begin - state->match_from_begin) % count_array (state->past.window);
-	    
-	    finalize_literal(output, state);
+	    assert (input->begin + state->window_progress <= input->end - sizeof(dzip_index));
 
-	    write_command (output, DZIP_CMD_MATCH, match_length);
-	    //write_point (output, match_distance);
-	    write_point (output, state->match_from_begin);
+	    setup_match (state, input);
 
-#ifdef DZIP_RECORD_STATS
-	    stat_match_count++;
-	    stat_match_length += match_length;
-	    //stat_match_distance += match_distance;
-#endif
-
-	    assert (state->match_to_begin + match_length == state->past.bytes_read);
-	    
-	    state->literal_begin = state->past.bytes_read;
-	}
-	else if (literal_length == DZIP_ARG1_EXTEND_MASK)
-	{
-	    state->match_to_begin = state->past.bytes_read;
-	    finalize_literal(output, state);
-	}
-	
-	state->match_to_begin = state->past.bytes_read;
-	state->match_from_begin = *recent_point;
-		
-	if (future.byte != reference_window_byte (state->past.window, state->match_from_begin))
-	{
-	    *recent_point = state->past.bytes_read;
-	    state->match_to_begin++;
+	    if (4 < state->match.length)
+	    {
+		write_literal (output, state, input);
+		write_match (output, state);
+	    }
+	    else
+	    {
+		state->window_progress++;
+	    }
 	}
     }
+    
+    state->window_progress = window_size;
+    write_literal(output, state, input);
 
-    //*recent_point = state->past.bytes_read;
-    reference_window_byte(state->past.window, state->past.bytes_read) = future.byte;
-    state->past.bytes_read++;
-}
-
-inline static void write_literal (buffer_char * output, dzip_deflate_state * state, dzip_size size, const char * begin)
-{
-    state->match_to_begin = state->past.bytes_read;
-    finalize_literal(output, state);
-    for (dzip_size i = 0; i < size; i++)
-    {
-	reference_window_byte(state->past.window, state->past.bytes_read) = begin[i];
-	state->past.bytes_read++;
-    }
-    state->match_to_begin = state->past.bytes_read;
-    finalize_literal(output, state);
+    *(dzip_header*) (output->begin + output_start) = (dzip_header)
+	{
+	    .magic = DZIP_MAGIC_INITIALIZER,
+	    .version = DZIP_VERSION,
+	    .chunk_size = range_count(*output) - output_start,
+	};
 }
 
 keyargs_define(dzip_deflate)
 {
-    range_const_char input = *args.input;
+    range_const_unsigned_char chunk = *args.input;
+    dzip_size max_chunk_size = 1e6;
     
-    if (!args.state->past.bytes_read)
+    while (chunk.begin < args.input->end)
     {
-	buffer_append_n (*args.output, "deezwhat", 8);
-    }
+	chunk.end = chunk.begin + max_chunk_size;
 
-    if ((size_t)range_count (input) <= 2 * sizeof(dzip_index))
-    {
-	write_literal (args.output, args.state, range_count (input), input.begin);
-	return;
+	if (chunk.end > args.input->end)
+	{
+	    chunk.end = args.input->end;
+	}
+	
+	deflate_chunk (args.output, args.state, &chunk);
+
+	chunk.begin = chunk.end;
     }
-    
-    input.end -= sizeof(dzip_index);
-    
-    while (input.begin < input.end)
-    {
-	add_state_byte (args.output, args.state, input.begin);
-	input.begin++;
-    }
-    
-    write_literal (args.output, args.state, sizeof(dzip_index), input.end);
     
 #ifdef DZIP_RECORD_STATS
-    stat_bytes_in += range_count (*args.input);
+    if (args.input)
+    {
+	stat_bytes_in += range_count (*args.input);
+    }
+    
     stat_bytes_out += range_count (*args.output);
 #endif
 }
@@ -205,6 +217,11 @@ keyargs_define(dzip_deflate)
 keyargs_define(dzip_deflate_state_new)
 {
     return calloc (1, sizeof (dzip_deflate_state));
+}
+
+void dzip_deflate_state_free(dzip_deflate_state * state)
+{
+    free (state);
 }
 
 void dzip_print_stats()

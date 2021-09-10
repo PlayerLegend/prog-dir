@@ -18,8 +18,8 @@ bool deflate_fd (int in, int out)
 
     long int size;
 
-    buffer_unsigned_char input = {0};
-    buffer_unsigned_char output = {0};
+    buffer_char input = {0};
+    buffer_char output = {0};
 
     size_t wrote_size;
 
@@ -29,9 +29,9 @@ bool deflate_fd (int in, int out)
 	buffer_rewrite (output);
 	
 	while (0 < (size = buffer_read (.fd = in,
-					.buffer = &input.char_cast,
-					.initial_alloc_size = 1e6,
-					.max_buffer_size = 1e6)))
+					.buffer = &input,
+					.initial_alloc_size = 10e6,
+					.max_buffer_size = 10e6)))
 	{}
 
 	if (size < 0)
@@ -49,7 +49,7 @@ bool deflate_fd (int in, int out)
 	wrote_size = 0;
 
 	while (0 < (size = buffer_write (.fd = out,
-					 .buffer = &output.char_cast.range_cast.const_cast,
+					 .buffer = &output.range_cast.const_cast,
 					 .wrote_size = &wrote_size)))
 	{}
 
@@ -71,47 +71,20 @@ bool inflate_fd (int in, int out)
 
     long int size;
 
-    buffer_unsigned_char input = {0};
-    buffer_unsigned_char output = {0};
+    buffer_char input = {0};
+    buffer_char output = {0};
 
     size_t wrote_size;
-    dzip_size chunk_size;
 
     while (true)
     {
 	buffer_rewrite (input);
 	buffer_rewrite (output);
-
-	/*if (!dzip_inflate_read_chunk(&input, in))
-	{
-	    log_fatal ("Failed to read a chunk");
-	    }*/
-
-	while (0 < (size = buffer_read (.fd = in,
-					.buffer = &input.char_cast,
-					.max_buffer_size = sizeof(dzip_header))))
-	{}
-
-	if (size < 0)
-	{
-	    log_fatal ("failed while reading chunk header");
-	}
-
-	if (range_is_empty (input))
-	{
-	    return true;
-	}
-
-	if ((dzip_size)range_count (input) < sizeof(dzip_header))
-	{
-	    log_fatal ("truncated dzip header");
-	}
-	
-	chunk_size = ((dzip_header*) input.begin)->chunk_size;
 	
 	while (0 < (size = buffer_read (.fd = in,
-					.buffer = &input.char_cast,
-					.max_buffer_size = chunk_size)))
+					.buffer = &input,
+					.initial_alloc_size = 10e6,
+					.max_buffer_size = 10e6)))
 	{}
 
 	if (size < 0)
@@ -119,12 +92,12 @@ bool inflate_fd (int in, int out)
 	    log_fatal ("failed while reading input");
 	}
 
-	if ((dzip_size)range_count(input) < chunk_size)
+	if (range_is_empty (input))
 	{
-	    log_fatal ("truncated dzip chunk");
+	    return true;
 	}
 
-	if (!dzip_inflate (.state = state, .chunk = (dzip_chunk*) input.begin, .output = &output))
+	if (!dzip_inflate (.state = state, .input = &input.range_cast.const_cast, .output = &output))
 	{
 	    log_fatal ("Failed while inflating");
 	}
@@ -132,7 +105,7 @@ bool inflate_fd (int in, int out)
 	wrote_size = 0;
 
 	while (0 < (size = buffer_write (.fd = out,
-					 .buffer = &output.char_cast.range_cast.const_cast,
+					 .buffer = &output.range_cast.const_cast,
 					 .wrote_size = &wrote_size)))
 	{}
 

@@ -22,7 +22,7 @@ _gallery_tag() {
 	list_files | tr '\n' '\0' | TYPE="gallery" TAG="$first" xargs -0 tag add files
     fi
 
-    list_files | tr '\n' '\0' | xargs -0 tag-interactive viewimage
+    list_files | tr '\n' '\0' | xargs -0 tag-interactive view
 
     rm -r "$tmp" "$download_archive"
 }

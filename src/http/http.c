@@ -437,7 +437,7 @@ fail:
     return false;
 }
 
-bool http_get_contents (range_char * contents, http_get * get)
+bool http_get_contents (range_const_char * contents, http_get * get)
 {
     if (get->stream->error)
     {

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/busybox sh
 
 set -e
 
@@ -9,9 +9,7 @@ then
 fi
 
 cmd_db() {
-    #( flock -x 200
-      sqlite3 "$DB"
-    #) 200>"$DB".lock
+    ( flock -x 200; sqlite3 "$DB" ) 200>"$DB".lock
 }
 
 cmd_db <<EOF

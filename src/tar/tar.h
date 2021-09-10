@@ -32,6 +32,8 @@ struct tar_state {
     } file;
 };
 
+// reading
+
 void tar_restart(tar_state * state);
 
 bool tar_update_fd (tar_state * state, int fd);
@@ -47,3 +49,43 @@ keyargs_declare(bool,tar_read_region,
 #define tar_read_region(...) keyargs_call(tar_read_region, __VA_ARGS__) 
 
 bool tar_skip_file (tar_state * state, int fd);
+
+// writing
+
+keyargs_declare(bool,tar_write_header,
+		buffer_char * output;
+		const char * name;
+		int mode;
+		int uid;
+		int gid;
+		unsigned long long size;
+		unsigned long long mtime;
+		tar_type type;
+		const char * linkname;
+		const char * uname;
+		const char * gname;
+    );
+
+#define tar_write_header(...) keyargs_call(tar_write_header, __VA_ARGS__)
+
+void tar_write_padding (buffer_char * output, unsigned long long file_size);
+
+void tar_write_end (buffer_char * output);
+
+keyargs_declare(bool,tar_write_path_header,
+		buffer_char * output;
+		tar_type * detect_type;
+		unsigned long long * detect_size;
+		const char * path;
+		const char * override_name;);
+
+#define tar_write_path_header(...) keyargs_call(tar_write_path_header, __VA_ARGS__)
+
+// compressed
+
+typedef enum {
+    TAR_COMPRESSION_NONE,
+    TAR_COMPRESSION_DZIP,
+}
+    tar_compression_type;
+

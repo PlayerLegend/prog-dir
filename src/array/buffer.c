@@ -13,6 +13,7 @@ int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_co
     if (!new_region)
     {
 	perror ("realloc");
+	//fprintf(stderr, "tried to alloc %zu * %zu = %zu", type_size, new_count, type_size * new_count);
 	fflush (stderr);
 	return -1;
     }

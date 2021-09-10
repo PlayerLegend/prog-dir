@@ -14,7 +14,7 @@ http_stream * http_stream_open (const char * host, const char * port);
 
 http_get * http_get_open (http_stream * stream, const char * path);
 bool http_get_update (http_get * get);
-bool http_get_contents (range_char * contents, http_get * get);
+bool http_get_contents (range_const_char * contents, http_get * get);
 void http_get_truncate (http_get * get);
 
 keyargs_declare(void,http_parse_url,const char ** protocol; const char ** host; const char ** port; const char ** path; char * url;);

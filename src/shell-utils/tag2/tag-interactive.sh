@@ -127,11 +127,14 @@ cmd_remove() {
     action="remove files" tag_action "$@"
 }
 
+cmd_view_videos() {
+    tr '\n' '\0' | xargs -0 mpv
+}
 cmd_view_list() {
     feh -f - \
 	--keep-zoom-vp \
 	--action1 ";"[tag]"$0 add %F" \
-	--action2 ";"[spawn]"PARENT=%F tag-interactive viewimage &" \
+	--action2 ";"[spawn]"PARENT=%F tag-interactive view &" \
 	--action3 ";"[search]"xterm -e view-image search %F" \
 	--action4 ";"[copy]"convert %F png:- | xclip -selection clipboard -t image/png" \
 	--action5 [-asdf]"TAG=asdf-past TYPE=lewd tag add files %F; TAG=asdf TYPE=lewd tag remove files %F" \
@@ -163,7 +166,7 @@ EOF
     tag link
 }
 
-cmd_viewimage() {
+cmd_view() {
     tag_prompt() {
 	if ! test -z "$PARENT"
 	then
@@ -196,6 +199,18 @@ EOF
 	list | rofi -dmenu -i -p "view image [$(basename "$DB")]" -mesg "$(mesg)"
     }
 
+    if test "$1" = feh
+    then
+	viewer=cmd_view_list
+	shift
+    elif test "$1" = mpv
+    then
+	viewer=cmd_view_videos
+	shift
+    else
+	viewer=cmd_view_list
+    fi
+
     if test -f "$1"
     then
 	printf '%s\n' "$@" | cmd_view_list
@@ -217,7 +232,7 @@ WHERE type = 'filename' AND digest IN (select digest from tag where name='asdf' 
 ORDER BY name;
 EOF
 	}
-	tag list digests | buffer | storefile path | cmd_view_list "$@";
+	tag list digests | buffer | storefile path | $viewer "$@";
     fi
 }
 

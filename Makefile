@@ -86,25 +86,16 @@ src/metahash/metahash.o: src/keyargs/keyargs.h src/array/range.h
 src/metahash/metahash.o: src/array/buffer.h src/buffer_io/buffer_io.h
 src/metahash/metahash.o: src/vluint/vluint.h src/metahash/metahash.h
 src/metahash/metahash.o: src/log/log.h
-src/dzip/deflate.match.bad.o: src/keyargs/keyargs.h src/array/range.h
-src/dzip/deflate.match.bad.o: src/array/buffer.h src/dzip/dzip.h
-src/dzip/deflate.match.bad.o: src/dzip/internal.h src/log/log.h
 src/dzip/deflate.o: src/keyargs/keyargs.h src/array/range.h
 src/dzip/deflate.o: src/array/buffer.h src/dzip/dzip.h src/dzip/internal.h
-src/dzip/deflate.o: src/log/log.h
+src/dzip/deflate.o: src/log/log.h src/vluint/vluint.h
 src/dzip/inflate.o: src/keyargs/keyargs.h src/array/range.h
 src/dzip/inflate.o: src/array/buffer.h src/dzip/dzip.h src/dzip/internal.h
-src/dzip/inflate.o: src/log/log.h
+src/dzip/inflate.o: src/log/log.h src/vluint/vluint.h
 src/dzip/dzip.o: src/keyargs/keyargs.h src/array/range.h src/array/buffer.h
 src/dzip/dzip.util.o: src/array/range.h src/array/buffer.h
 src/dzip/dzip.util.o: src/keyargs/keyargs.h src/dzip/dzip.h
 src/dzip/dzip.util.o: src/buffer_io/buffer_io.h src/log/log.h
-src/dzip/deflate.okay.o: src/keyargs/keyargs.h src/array/range.h
-src/dzip/deflate.okay.o: src/array/buffer.h src/dzip/dzip.h
-src/dzip/deflate.okay.o: src/dzip/internal.h src/log/log.h
-src/dzip/deflate.good.o: src/keyargs/keyargs.h src/array/range.h
-src/dzip/deflate.good.o: src/array/buffer.h src/dzip/dzip.h
-src/dzip/deflate.good.o: src/dzip/internal.h src/log/log.h
 src/dzip/test/dzip-benchmark.test.o: src/array/range.h src/array/buffer.h
 src/dzip/test/dzip-benchmark.test.o: src/keyargs/keyargs.h
 src/dzip/test/dzip-benchmark.test.o: src/buffer_io/buffer_io.h
@@ -119,14 +110,34 @@ src/array/test/buffer.test.o: src/test/debug.h
 src/array/test/range.test.o: src/array/range.h src/test/debug.h
 src/array/buffer.o: src/array/range.h src/array/buffer.h
 src/tutorial/ffmpeg-video-player/player.o: src/log/log.h
-src/pkg/pkg.o: src/pkg/pkg.h src/array/range.h src/array/buffer.h
-src/pkg/pkg.o: src/list/list.h src/keyargs/keyargs.h
-src/pkg/pkg.o: src/buffer_io/buffer_io.h src/log/log.h src/tar/tar.h
-src/pkg/pkg.o: src/path/path.h src/immutable/immutable.h
-src/pkg/pkg.o: src/paren-parser/paren-parser.h
-src/pkg/pkg.o: src/paren-parser/paren-preprocessor.h src/table2/table.h
-src/pkg/pkg.o: src/table2/table-string.h
-src/pkg/pkg.util.o: src/pkg/pkg.h src/log/log.h
+src/pkg/pkg.o: src/keyargs/keyargs.h
+src/pkg/pkg-install.o: src/keyargs/keyargs.h src/pkg/pkg.h src/array/range.h
+src/pkg/pkg-install.o: src/array/buffer.h src/dzip/internal.h src/tar/tar.h
+src/pkg/pkg-install.o: src/log/log.h src/path/path.h
+src/pkg/pkg-install.o: src/buffer_io/buffer_io.h
+src/pkg/pkg-pack.util.o: src/keyargs/keyargs.h src/pkg/pkg.h src/log/log.h
+src/pkg/pkg-update.o: src/pkg/pkg-update.h src/immutable/immutable.h
+src/pkg/pkg-update.o: src/keyargs/keyargs.h src/paren-parser/paren-parser.h
+src/pkg/pkg-update.o: src/paren-parser/paren-preprocessor.h
+src/pkg/internal.o: src/keyargs/keyargs.h src/pkg/pkg.h src/array/range.h
+src/pkg/internal.o: src/array/buffer.h src/table2/table.h
+src/pkg/internal.o: src/table2/table-string.h
+src/pkg/pkg-install.util.o: src/keyargs/keyargs.h src/pkg/pkg.h src/log/log.h
+src/pkg/pkg-manifest.o: src/array/range.h src/array/buffer.h
+src/pkg/pkg-manifest.o: src/table2/table.h src/list/list.h
+src/pkg/pkg-manifest.o: src/keyargs/keyargs.h src/pkg/pkg-manifest.h
+src/pkg/pkg-manifest.o: src/table2/table-string.h
+src/pkg/pkg-pack.o: src/keyargs/keyargs.h src/pkg/pkg.h src/array/range.h
+src/pkg/pkg-pack.o: src/array/buffer.h src/tar/tar.h src/log/log.h
+src/pkg/pkg-pack.o: src/buffer_io/buffer_io.h src/dzip/dzip.h src/path/path.h
+src/pkg/pkg-manifest.o: src/array/range.h src/array/buffer.h
+src/pkg/pkg-manifest.o: src/table2/table.h src/list/list.h
+src/pkg/pkg-manifest.o: src/keyargs/keyargs.h src/table2/table-string.h
+src/pkg/pkg-root.o: src/keyargs/keyargs.h src/pkg/pkg.h src/array/range.h
+src/pkg/pkg-root.o: src/array/buffer.h src/dzip/internal.h
+src/pkg/pkg-root.o: src/buffer_io/buffer_io.h src/path/path.h src/log/log.h
+src/pkg/pkg-root.o: src/immutable/immutable.h src/paren-parser/paren-parser.h
+src/pkg/pkg-root.o: src/paren-parser/paren-preprocessor.h
 src/table2/table.o: src/array/range.h src/array/buffer.h src/table2/table.h
 src/table2/table.o: src/table2/table-string.h
 src/table2/table.o: src/array/range.h
@@ -220,6 +231,9 @@ src/file/file.o: src/array/range.h src/array/buffer.h
 src/tar/tar.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
 src/tar/tar.o: src/buffer_io/buffer_io.h src/tar/tar.h src/log/log.h
 src/tar/tar.o: src/tar/spec.h
+src/tar/write.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/tar/write.o: src/buffer_io/buffer_io.h src/tar/tar.h src/log/log.h
+src/tar/write.o: src/tar/spec.h src/path/path.h
 src/tar/test/list-tar.test.o: src/array/range.h src/array/buffer.h
 src/tar/test/list-tar.test.o: src/keyargs/keyargs.h src/buffer_io/buffer_io.h
 src/tar/test/list-tar.test.o: src/tar/spec.h src/log/log.h src/tar/tar.h
@@ -237,6 +251,8 @@ src/vluint/test/vluint.test.o: src/metabase/metabase.h
 src/vluint/test/vluint.test.o: src/buffer_io/buffer_io.h src/log/log.h
 src/vluint/vluint.o: src/keyargs/keyargs.h src/array/range.h
 src/vluint/vluint.o: src/array/buffer.h
+src/pipe-program/pipe-program.o: src/pipe-program/pipe-program.h
+src/pipe-program/pipe-program.o: src/log/log.h
 src/list/test/list.test.o: src/list/list.h src/test/debug.h
 src/json/json.o: src/array/range.h src/json/json.h src/array/buffer.h
 src/json/json.o: src/log/log.h src/list/list.h src/table2/table.h
@@ -263,8 +279,10 @@ src/base16/test/base16.test.o: src/array/range.h src/array/buffer.h
 src/base16/test/base16.test.o: src/base16/base16.h src/log/log.h
 src/base16/base16.o: src/array/range.h src/array/buffer.h src/base16/base16.h
 src/base16/base16.o: src/log/log.h
-src/path/path.o: src/path/path.h src/array/range.h src/array/buffer.h
-src/path/path.o: src/log/log.h
+src/path/path.o: src/array/range.h src/array/buffer.h src/path/path.h
+src/path/path.o: src/log/log.h src/keyargs/keyargs.h
+src/path/path.o: src/buffer_io/buffer_io.h
+src/path/path.o: src/array/range.h src/array/buffer.h
 src/log/log.o: src/log/log.h
 src/log/test/log.test.o: src/log/log.h src/test/debug.h
 src/vec/vec3.o: src/vec/vec.h
