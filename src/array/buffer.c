@@ -49,3 +49,20 @@ void _buffer_downshift (buffer_void * buffer, size_t element_size, size_t count)
 
     assert ((size_t)range_count (*buffer) == shift_size);
 }
+
+void buffer_strncpy (buffer_char * buffer, const char * begin, size_t size)
+{
+    buffer_resize(*buffer, size + 1);
+    memcpy (buffer->begin, begin, size);
+    buffer->end--;
+    *buffer->end = '\0';
+}
+
+void buffer_strcpy (buffer_char * to, const char * input)
+{
+    size_t size = strlen(input) + 1;
+    buffer_resize (*to, size);
+    memcpy (to->begin, input, size - 1);
+    to->end--;
+    *to->end = '\0';
+}

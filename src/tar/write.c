@@ -15,9 +15,10 @@
 #include "../array/buffer.h"
 #include "../keyargs/keyargs.h"
 #include "../buffer_io/buffer_io.h"
-#include "tar.h"
+#include "common.h"
+#include "write.h"
+#include "internal/spec.h"
 #include "../log/log.h"
-#include "spec.h"
 #include "../path/path.h"
 
 inline static bool convert_type(char * output, tar_type input)

@@ -10,9 +10,10 @@
 #include "../array/buffer.h"
 #include "../keyargs/keyargs.h"
 #include "../buffer_io/buffer_io.h"
-#include "tar.h"
+#include "common.h"
+#include "read.h"
 #include "../log/log.h"
-#include "spec.h"
+#include "internal/spec.h"
 
 void tar_restart(tar_state * state)
 {

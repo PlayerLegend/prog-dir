@@ -96,6 +96,9 @@ src/dzip/dzip.o: src/keyargs/keyargs.h src/array/range.h src/array/buffer.h
 src/dzip/dzip.util.o: src/array/range.h src/array/buffer.h
 src/dzip/dzip.util.o: src/keyargs/keyargs.h src/dzip/dzip.h
 src/dzip/dzip.util.o: src/buffer_io/buffer_io.h src/log/log.h
+src/dzip/extensions.o: src/keyargs/keyargs.h src/array/range.h
+src/dzip/extensions.o: src/array/buffer.h src/dzip/dzip.h
+src/dzip/extensions.o: src/buffer_io/buffer_io.h
 src/dzip/test/dzip-benchmark.test.o: src/array/range.h src/array/buffer.h
 src/dzip/test/dzip-benchmark.test.o: src/keyargs/keyargs.h
 src/dzip/test/dzip-benchmark.test.o: src/buffer_io/buffer_io.h
@@ -104,6 +107,9 @@ src/sliding-window/test/sliding-window.test.o: src/array/range.h
 src/sliding-window/test/sliding-window.test.o: src/array/buffer.h
 src/sliding-window/test/sliding-window.test.o: src/sliding-window/sliding-window.h
 src/sliding-window/sliding-window.o: src/array/range.h
+src/url/url.o: src/array/range.h src/array/buffer.h
+src/url/url.o: src/array/range.h src/array/buffer.h src/url/url.h
+src/url/url.o: src/log/log.h
 src/array/buffer.o: src/array/range.h
 src/array/test/buffer.test.o: src/array/range.h src/array/buffer.h
 src/array/test/buffer.test.o: src/test/debug.h
@@ -112,9 +118,9 @@ src/array/buffer.o: src/array/range.h src/array/buffer.h
 src/tutorial/ffmpeg-video-player/player.o: src/log/log.h
 src/pkg/pkg.o: src/keyargs/keyargs.h
 src/pkg/pkg-install.o: src/keyargs/keyargs.h src/pkg/pkg.h src/array/range.h
-src/pkg/pkg-install.o: src/array/buffer.h src/dzip/internal.h src/tar/tar.h
-src/pkg/pkg-install.o: src/log/log.h src/path/path.h
-src/pkg/pkg-install.o: src/buffer_io/buffer_io.h
+src/pkg/pkg-install.o: src/array/buffer.h src/dzip/internal.h
+src/pkg/pkg-install.o: src/tar/common.h src/tar/read.h src/log/log.h
+src/pkg/pkg-install.o: src/path/path.h src/buffer_io/buffer_io.h
 src/pkg/pkg-pack.util.o: src/keyargs/keyargs.h src/pkg/pkg.h src/log/log.h
 src/pkg/pkg-update.o: src/pkg/pkg-update.h src/immutable/immutable.h
 src/pkg/pkg-update.o: src/keyargs/keyargs.h src/paren-parser/paren-parser.h
@@ -128,8 +134,9 @@ src/pkg/pkg-manifest.o: src/table2/table.h src/list/list.h
 src/pkg/pkg-manifest.o: src/keyargs/keyargs.h src/pkg/pkg-manifest.h
 src/pkg/pkg-manifest.o: src/table2/table-string.h
 src/pkg/pkg-pack.o: src/keyargs/keyargs.h src/pkg/pkg.h src/array/range.h
-src/pkg/pkg-pack.o: src/array/buffer.h src/tar/tar.h src/log/log.h
-src/pkg/pkg-pack.o: src/buffer_io/buffer_io.h src/dzip/dzip.h src/path/path.h
+src/pkg/pkg-pack.o: src/array/buffer.h src/tar/common.h src/tar/write.h
+src/pkg/pkg-pack.o: src/log/log.h src/buffer_io/buffer_io.h src/dzip/dzip.h
+src/pkg/pkg-pack.o: src/path/path.h
 src/pkg/pkg-manifest.o: src/array/range.h src/array/buffer.h
 src/pkg/pkg-manifest.o: src/table2/table.h src/list/list.h
 src/pkg/pkg-manifest.o: src/keyargs/keyargs.h src/table2/table-string.h
@@ -228,21 +235,26 @@ src/file/file.o: src/array/range.h src/array/buffer.h src/file/file.h
 src/file/test/file.test.o: src/array/range.h src/array/buffer.h
 src/file/test/file.test.o: src/file/file.h src/test/debug.h
 src/file/file.o: src/array/range.h src/array/buffer.h
-src/tar/tar.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
-src/tar/tar.o: src/buffer_io/buffer_io.h src/tar/tar.h src/log/log.h
-src/tar/tar.o: src/tar/spec.h
+src/tar/read.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/tar/read.o: src/buffer_io/buffer_io.h src/tar/common.h src/tar/read.h
+src/tar/read.o: src/log/log.h src/tar/internal/spec.h
 src/tar/write.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
-src/tar/write.o: src/buffer_io/buffer_io.h src/tar/tar.h src/log/log.h
-src/tar/write.o: src/tar/spec.h src/path/path.h
+src/tar/write.o: src/buffer_io/buffer_io.h src/tar/common.h src/tar/write.h
+src/tar/write.o: src/tar/internal/spec.h src/log/log.h src/path/path.h
 src/tar/test/list-tar.test.o: src/array/range.h src/array/buffer.h
 src/tar/test/list-tar.test.o: src/keyargs/keyargs.h src/buffer_io/buffer_io.h
-src/tar/test/list-tar.test.o: src/tar/spec.h src/log/log.h src/tar/tar.h
+src/tar/test/list-tar.test.o: src/tar/internal/spec.h src/log/log.h
+src/tar/test/list-tar.test.o: src/tar/common.h src/tar/read.h
 src/tar/test/tar-dump-posix-header.test.o: src/keyargs/keyargs.h
 src/tar/test/tar-dump-posix-header.test.o: src/array/range.h
 src/tar/test/tar-dump-posix-header.test.o: src/array/buffer.h
 src/tar/test/tar-dump-posix-header.test.o: src/buffer_io/buffer_io.h
-src/tar/test/tar-dump-posix-header.test.o: src/tar/spec.h src/log/log.h
-src/tar/tar.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/tar/test/tar-dump-posix-header.test.o: src/tar/internal/spec.h
+src/tar/test/tar-dump-posix-header.test.o: src/log/log.h
+src/tar/read.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/tar/read.o: src/tar/common.h
+src/tar/write.o: src/array/range.h src/array/buffer.h src/keyargs/keyargs.h
+src/tar/write.o: src/tar/common.h
 src/vluint/vluint.o: src/keyargs/keyargs.h src/array/range.h
 src/vluint/vluint.o: src/array/buffer.h src/vluint/vluint.h src/log/log.h
 src/vluint/test/vluint.test.o: src/keyargs/keyargs.h src/array/range.h
@@ -317,7 +329,7 @@ src/base2/test/base2.test.o: src/base2/base2.h src/log/log.h
 src/base2/base2.o: src/array/range.h src/array/buffer.h
 src/base2/base2.o: src/array/range.h src/array/buffer.h src/base2/base2.h
 src/base2/base2.o: src/log/log.h
-src/http/http.o: src/keyargs/keyargs.h src/array/range.h src/array/buffer.h
+src/http/http.o: src/array/range.h src/array/buffer.h
 src/http/test/http_parse_url.test.o: src/keyargs/keyargs.h src/array/range.h
 src/http/test/http_parse_url.test.o: src/array/buffer.h src/http/http.h
 src/http/test/http-cat.test.o: src/array/range.h src/array/buffer.h

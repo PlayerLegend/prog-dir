@@ -12,39 +12,6 @@
 #include "../log/log.h"
 #include "../vluint/vluint.h"
 
-struct dzip_inflate_state
-{
-    enum {
-	INFLATE_READ_HEADER,
-	INFLATE_READ_CMD,
-	INFLATE_EXTEND_ARG1,
-	INFLATE_SELECT_JOB,
-	INFLATE_READ_LITERAL,
-	INFLATE_READ_MATCH_POINT,
-	INFLATE_READ_MATCH_CONTENTS,
-    }
-	job;
-
-    unsigned char cmd;
-
-    union {
-	uint16_t arg1, literal_length, match_length;
-    };
-    
-    union {
-	vluint_result arg2, match_point;
-    };
-    
-    dzip_size command_bytes, bytes_read, bytes_written;
-
-    char magic[8]; 
-};
-
-dzip_inflate_state * dzip_inflate_state_new()
-{
-    return calloc (1, sizeof(dzip_inflate_state));
-}
-
 keyargs_define(dzip_inflate)
 {
     char test_magic[] = DZIP_MAGIC_INITIALIZER;

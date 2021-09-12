@@ -61,3 +61,37 @@ bool dzip_inflate_read_chunk (buffer_unsigned_char * chunk, int fd)
 
     return true;
 }
+
+long long int dzip_inflate_range (buffer_unsigned_char * output, range_const_unsigned_char * input)
+{
+    union {
+	const dzip_chunk * cast;
+	const unsigned char * byte;
+    }
+	chunk = { .byte = input->begin };
+
+    const unsigned char magic[] = DZIP_MAGIC_INITIALIZER;
+
+    while (chunk.byte < input->end - sizeof(*chunk.cast))
+    {
+	if (0 != memcmp (chunk.cast->header.magic, magic, sizeof(magic)))
+	{
+	    return -1;
+	}
+
+	if (chunk.cast->header.version != DZIP_VERSION)
+	{
+	    return -1;
+	}
+
+	if (!dzip_inflate(.chunk = chunk.cast,
+			  .output = output))
+	{
+	    return -1;
+	}
+
+	chunk.byte += chunk.cast->header.chunk_size;
+    }
+
+    return chunk.byte - input->begin;
+}

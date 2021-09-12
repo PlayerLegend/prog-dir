@@ -13,7 +13,7 @@
 #include "../vluint/vluint.h"
 
 //#ifndef NDEBUG
-#define DZIP_RECORD_STATS
+//#define DZIP_RECORD_STATS
 //#endif
 
 #ifdef DZIP_RECORD_STATS

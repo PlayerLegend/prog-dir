@@ -9,7 +9,7 @@ bin/pkg-install: src/pkg/pkg-install.o
 bin/pkg-install: src/pkg/pkg-install.util.o
 bin/pkg-install: src/pkg/pkg-root.o
 bin/pkg-install: src/table2/table.o
-bin/pkg-install: src/tar/tar.o
+bin/pkg-install: src/tar/read.o
 bin/pkg-pack: src/dzip/deflate.o
 bin/pkg-pack: src/pkg/pkg-pack.o
 bin/pkg-pack: src/pkg/pkg-pack.util.o

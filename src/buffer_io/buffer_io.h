@@ -52,5 +52,3 @@ keyargs_declare(bool, buffer_getline_fd,
 void buffer_getline_end (size_t protect_size, const char * sep, range_char * line, buffer_char * buffer);
 
 #define buffer_getline_init(buffer_p) { (buffer_p)->end = (buffer_p)->begin; }
-
-void buffer_strcpy (buffer_char * to, const char * input);

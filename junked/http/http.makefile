@@ -11,7 +11,7 @@ test/http-cat test/http_parse_url test/http_get_open: src/array/buffer.o
 test/run-chunked-http-cat: src/http/test/chunked-http-cat.test.sh
 test/run-identity-http-cat: src/http/test/identity-http-cat.test.sh
 
-#TESTS_C += test/http_parse_url test/http_get_open test/http-cat
-#TESTS_SH += test/run-chunked-http-cat test/run-identity-http-cat
+TESTS_C += test/http_parse_url test/http_get_open test/http-cat
+TESTS_SH += test/run-chunked-http-cat test/run-identity-http-cat
 
-#RUN_TESTS += test/run-chunked-http-cat test/run-identity-http-cat
+RUN_TESTS += test/run-chunked-http-cat test/run-identity-http-cat

@@ -340,12 +340,3 @@ void buffer_getline_end (size_t protect_size, const char * sep, range_char * lin
 {
     buffer_downshift_protect (protect_size, buffer, line->end + strlen(sep));
 }
-
-void buffer_strcpy (buffer_char * to, const char * input)
-{
-    size_t size = strlen(input) + 1;
-    buffer_resize (*to, size);
-    memcpy (to->begin, input, size - 1);
-    to->end--;
-    *to->end = '\0';
-}
