@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <string.h>
 #include <unistd.h>
 #include <getopt.h>
 #define FLAT_INCLUDES
@@ -17,6 +16,7 @@
 #include "../metabase/metabase.h"
 #include "../buffer_io/buffer_io.h"
 #include "../log/log.h"
+#include "../libc/string.h"
 
 #define fatal(mesg,...) { log_error(mesg,#__VA_ARGS__); goto fail; }
 

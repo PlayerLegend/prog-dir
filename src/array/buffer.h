@@ -1,7 +1,5 @@
 #ifndef FLAT_INCLUDES
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 #define FLAT_INCLUDES
 #include "range.h"
 #endif

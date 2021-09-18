@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #define FLAT_INCLUDES
 #include "../array/range.h"
@@ -13,6 +12,7 @@
 #include "../metabase/metabase.h"
 #include "../buffer_io/buffer_io.h"
 #include "../log/log.h"
+#include "../libc/string.h"
 
 static bool analyze_digest (const range_const_char * digest_armor)
 {

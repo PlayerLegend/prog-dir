@@ -53,6 +53,7 @@ monitor() {
     esac
 
     xinput map-to-output '1060PRO Pen Pen (0)' $primary
+    xinput map-to-output 'Wacom ISDv4 E6 Pen stylus' $secondary
     sh ~/.fehbg
 }
 

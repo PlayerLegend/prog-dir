@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <linux/limits.h>
 char *realpath(const char *path, char *resolved_path);
 #define FLAT_INCLUDES
@@ -13,8 +12,8 @@ char *realpath(const char *path, char *resolved_path);
 
 #define TABLE_STRING
 
-#include "../table2/table.h"
-#include "../table2/table-string.h"
+#include "../table/table.h"
+#include "../table/table-string.h"
 
 struct immutable_namespace
 {

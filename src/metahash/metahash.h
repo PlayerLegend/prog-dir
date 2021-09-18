@@ -30,24 +30,9 @@ enum metahash_id {
     METAHASH_MD5_128,
     METAHASH_DEFAULT = METAHASH_SHA2_256
 };
-/*
-typedef struct metahash_func metahash_func;
-struct metahash_func {
-    metahash_id id;
-    void * (*gen_context)();
-    bool (*update)(void * context, const range_const_unsigned_char * input);
-    bool (*final)(buffer_unsigned_char * output, void * context);
-};
-
-const extern metahash_func metahash_func_md5;
-const extern metahash_func metahash_func_sha256;
-const extern metahash_func metahash_func_sha512;
-*/
 
 range_typedef(metahash_id,metahash_id);
 buffer_typedef(metahash_id,metahash_id);
-//range_typedef(metahash_func*,metahash_func_p);
-//buffer_typedef(metahash_func*,metahash_func_p);
 
 metahash_id is_metahash_id (metahash_id input);
 size_t metahash_size (metahash_id input);

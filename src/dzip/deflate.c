@@ -1,19 +1,24 @@
 #include <stdint.h>
-#include <stdlib.h>
+#include <sys/types.h>
 #include <assert.h>
-#include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #define FLAT_INCLUDES
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
 #include "../array/buffer.h"
+#include "../io_wrapper/common.h"
+#include "../io_wrapper/read.h"
 #include "dzip.h"
 #include "internal.h"
 #include "../log/log.h"
 #include "../vluint/vluint.h"
+#include "../libc/string.h"
+
+#define DZIP_MAX_CHUNK_SIZE ((size_t)1e6);
 
 //#ifndef NDEBUG
-//#define DZIP_RECORD_STATS
+#define DZIP_RECORD_STATS
 //#endif
 
 #ifdef DZIP_RECORD_STATS
@@ -26,6 +31,7 @@ dzip_size stat_literal_count,
     stat_bytes_out;
 #endif
 
+//typedef uint64_t dzip_index;
 typedef uint32_t dzip_index;
 
 typedef struct {
@@ -57,8 +63,9 @@ static void write_command (buffer_unsigned_char * output, unsigned char command,
     }
     else
     {
+	//log_debug ("Writing %u, %u", arg, (vluint_result)arg / DZIP_ARG1_COMPACT_MAX);
 	*buffer_push (*output) = header | DZIP_ARG1_EXTEND_BIT;
-	vluint_write (output, arg / DZIP_ARG1_COMPACT_MAX);
+	vluint_write (output, (vluint_result)arg / DZIP_ARG1_COMPACT_MAX);
     }
 }
 
@@ -169,6 +176,8 @@ inline static void deflate_chunk (buffer_unsigned_char * restrict output, dzip_d
 	    }
 	    else
 	    {
+//#define mod (sizeof(dzip_index) / 2)
+		//state->window_progress += mod - state->window_progress % mod;
 		state->window_progress++;
 	    }
 	}
@@ -188,11 +197,10 @@ inline static void deflate_chunk (buffer_unsigned_char * restrict output, dzip_d
 keyargs_define(dzip_deflate)
 {
     range_const_unsigned_char chunk = *args.input;
-    dzip_size max_chunk_size = 1e6;
     
     while (chunk.begin < args.input->end)
     {
-	chunk.end = chunk.begin + max_chunk_size;
+	chunk.end = chunk.begin + DZIP_MAX_CHUNK_SIZE;
 
 	if (chunk.end > args.input->end)
 	{

@@ -6,6 +6,7 @@
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
 #include "../array/buffer.h"
+#include "../io_wrapper/read.h"
 #endif
 
 /** @file dzip.h
@@ -102,3 +103,5 @@ long long int dzip_inflate_range (buffer_unsigned_char * output, range_const_uns
    @param output The output buffer, where decompressed data will be written.
    @param input The input buffer, containing dzip chunks
  */
+
+io_read * io_read_open_dzip (io_read * source);

@@ -2,20 +2,22 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <string.h>
 #define FLAT_INCLUDES
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
 #include "../array/buffer.h"
+#include "../io_wrapper/common.h"
+#include "../io_wrapper/read.h"
 #include "dzip.h"
 #include "internal.h"
 #include "../log/log.h"
 #include "../vluint/vluint.h"
+#include "../libc/string.h"
 
 keyargs_define(dzip_inflate)
 {
     char test_magic[] = DZIP_MAGIC_INITIALIZER;
-    if (0 != memcmp (test_magic, args.chunk->header.magic, sizeof(test_magic)))
+    if (*(uint64_t*) test_magic != *(uint64_t*) args.chunk->header.magic)
     {
 	log_fatal ("Invalid magic in dzip chunk");
     }
@@ -77,6 +79,7 @@ read_extended_arg1:
 		      .input = &input,
 		      .rest = &input))
     {
+	log_debug ("Failed at byte %zu", input.begin - (const unsigned char*)args.chunk - sizeof(dzip_header));
 	log_fatal ("Truncated extended arg1");
     }
     

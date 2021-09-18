@@ -7,6 +7,8 @@
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
 #include "../array/buffer.h"
+#include "../io_wrapper/common.h"
+#include "../io_wrapper/read.h"
 #include "dzip.h"
 #include "../buffer_io/buffer_io.h"
 
@@ -94,4 +96,55 @@ long long int dzip_inflate_range (buffer_unsigned_char * output, range_const_uns
     }
 
     return chunk.byte - input->begin;
+}
+
+typedef struct {
+    io_read * source;
+    dzip_deflate_state * state;
+}
+    dzip_deflate_io_read_arg;
+
+static io_status io_read_dzip_update_func (buffer_unsigned_char * buffer, void * arg_orig)
+{
+    dzip_deflate_io_read_arg * arg = arg_orig;
+
+    io_status status = io_read_update (arg->source);
+
+    if (status == IO_ERROR)
+    {
+	return IO_ERROR;
+    }
+
+    range_const_unsigned_char contents = {0};
+
+    io_read_contents(&contents, arg->source);
+
+    if (status == IO_COMPLETE || range_count (contents) > 1e6)
+    {
+	dzip_deflate(.state = arg->state,
+		     .input = &contents,
+		     .output = buffer);
+
+	io_read_release(arg->source, range_count (contents));
+    }
+
+    return status;
+}
+
+static void io_read_dzip_free_arg (void * arg_orig)
+{
+    dzip_deflate_io_read_arg * arg = arg_orig;
+    dzip_deflate_state_free(arg->state);
+    free (arg);
+}
+
+io_read * io_read_open_dzip (io_read * source)
+{
+    dzip_deflate_io_read_arg * arg = malloc (sizeof(*arg));
+    arg->source = source;
+    arg->state = dzip_deflate_state_new();
+
+    return io_read_new (.func = io_read_dzip_update_func,
+			.arg = arg,
+			.free_arg = io_read_dzip_free_arg);
 }

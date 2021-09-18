@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <sys/types.h>
 #define FLAT_INCLUDES
 #include "../immutable/immutable.h"
 #include "../keyargs/keyargs.h"

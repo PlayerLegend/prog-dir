@@ -11,9 +11,9 @@
 #include "../log/log.h"
 #include "../list/list.h"
 
-#include "../table2/table.h"
+#include "../table/table.h"
 #define table_string_value json_value value
-#include "../table2/table-string.h"
+#include "../table/table-string.h"
 
 struct json_object {
     table_string map;

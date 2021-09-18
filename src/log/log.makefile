@@ -1,4 +1,9 @@
-test/log: src/log/test/log.test.o src/log/log.o
-
-TESTS_C += test/log
+C_PROGRAMS  += test/log
 RUN_TESTS += test/log
+
+log-tests: test/log
+
+test/log: src/log/log.o
+test/log: src/log/test/log.test.o
+
+tests: log-tests

@@ -8,6 +8,8 @@
 #include "../array/range.h"
 #include "../array/buffer.h"
 #include "../keyargs/keyargs.h"
+#include "../io_wrapper/common.h"
+#include "../io_wrapper/read.h"
 #include "../dzip/dzip.h"
 #include "../buffer_io/buffer_io.h"
 #include "../log/log.h"

@@ -1,207 +1,137 @@
 #ifndef FLAT_INCLUDES
-#include <assert.h>
-#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #define FLAT_INCLUDES
 #include "../array/range.h"
-#include "../list/list.h"
 #endif
 
-//#define TABLE_STRING
-#ifdef TABLE_STRING
-#define table_key char*
-#include <string.h>
-inline static table_key _table_key_copy(const table_key src)
-{
-    return strcpy (malloc (strlen (src) + 1), src);
-}
-#define table_key_copy(dst,src) dst = _table_key_copy (src)
-inline static size_t _table_key_hash(const table_key src)
-{
-    size_t digest = 0;
-    int c;
+// types
+
+typedef unsigned long long table_digest;
+
+#define table_typedef(query_tag,key_type,table_name,...)		\
+    typedef key_type table_##table_name##_key;				\
+    typedef const key_type table_##table_name##_const_key;		\
+    typedef query_tag table_##table_name##_query table_##table_name##_query; \
+    query_tag table_##table_name##_query {					\
+	table_digest digest;						\
+	table_##table_name##_const_key key;				\
+    };									\
+    typedef struct table_##table_name##_item table_##table_name##_item; \
+    struct table_##table_name##_item {					\
+	union {								\
+	    struct {							\
+		table_digest _digest;					\
+		table_##table_name##_key _key;						\
+	    };								\
+	    table_##table_name##_query query;				\
+	};								\
+	table_##table_name##_item * next;				\
+	struct {							\
+	    __VA_ARGS__;						\
+	}								\
+	    value;							\
+    };									\
+    typedef table_##table_name##_item** table_##table_name##_bucket;	\
+    typedef struct table_##table_name table_##table_name;		\
+    struct table_##table_name {						\
+	table_digest item_count;					\
+	struct range(table_##table_name##_item*);			\
+    };
+
+// helpers
+
+table_digest _table_hash_sdbm_string(const char * src);
+char * _table_copy_strdup(const char * src);
+
+// table functions
+
+#define table_query_struct(table_name, key) ((table_##table_name##_query) { table_##table_name##_hash(key), key })
+#define table_query_union(table_name, key) ((table_##table_name##_query) { .key = key })
+
+#define table_bucket(table_name, table, query)		\
+    ((table).begin + ((query).digest % (range_count (table))))	\
+
+#define table_match(table_name, bucket, query)		\
+    {									\
+	while (*(bucket))						\
+	{								\
+	    if (table_##table_name##_equals( (*(bucket))->query, query) ) \
+	    {								\
+		break;							\
+	    }								\
+	    bucket = &(*(bucket))->next;				\
+	}								\
+    }
+
+#define table_get_bucket_item(bucket)		\
+    (*(bucket))
     
-    while ( (c = *src++) )
-    {
-	digest = c + (digest << 6) + (digest << 16) - digest;
+#define table_insert_size_into(table_name, bucket, query, size)		\
+    {									\
+	*(bucket) = (table_##table_name##_item*) calloc (1, size); \
+	(*(bucket))->query = (table_##table_name##_query){ .digest = (query).digest, .key = table_##table_name##_copy((query).key) }; \
     }
 
-    return digest;
-}
-#define table_key_hash(digest,src) digest = _table_key_hash (src)
-#define table_key_equals(a,b) (0 == strcmp (a, b))
-#define table_key_free(key) free (key)
-#endif
+#define table_insert_into(table_name, bucket, query) table_insert_size_into (table_name, bucket, query, sizeof(table_##table_name##_item)))
 
-#ifndef table_key
-#define table_key int
-#define table_key_copy(dst,src) (dst) = (src)
-#define table_key_hash(digest,src) (digest) = (src)
-#define table_key_equals(a,b) (a) == (b)
-#define table_key_free(key)
-#endif
+#define for_table_bucket(item,bucket)			\
+    for (item = *bucket; item; (item) = (item)->next)
 
-#ifndef TABLE_VALUE
-#define TABLE_VALUE
-#endif
+#define for_table(bucket, table)		\
+    for_range(bucket,table)
 
-#ifdef TABLE_IMMUTABLE_STRING
-#define table_key const char*
-#include <string.h>
-inline static table_key _table_key_copy(const table_key src)
-{
-    return src;
-}
-#define table_key_copy(dst,src) dst = _table_key_copy (src)
-inline static size_t _table_key_hash(const table_key src)
-{
-    return (size_t) src;
-}
-#define table_key_hash(digest,src) digest = (size_t) src
-#define table_key_equals(a,b) (a == b)
-#define table_key_free(key) 
-#endif
-
-typedef struct list_element (struct { size_t digest; table_key key; TABLE_VALUE; }) table_element;
-typedef list_handle (table_element) table_bucket;
-typedef struct { size_t used; struct range(table_bucket); } table;
-typedef struct table_result table_result;
-struct table_result {
-    const table_key key;
-    table * table;
-    size_t digest;
-    table_element * match;
-    table_bucket * bucket;
-};
-
-#define for_table(item, bucket, table)		\
-    for_range (bucket, table)			\
-	for_list (item, *bucket)
-
-static void table_resize (table * resize_table, size_t new_bucket_count)
-{
-    table old_table = *resize_table;
-    range_calloc (*resize_table, new_bucket_count);
-
-    table_element * element;
-    table_bucket * new_bucket;
-    table_bucket * old_bucket;
-    
-    for_range (old_bucket, old_table)
-    {
-	while ( (element = list_pop (*old_bucket)) )
-	{
-	    new_bucket = resize_table->begin + element->child.digest % new_bucket_count;
-	    list_push (*new_bucket, *element);
-	}
+#define table_resize(table_name, table, new_size)			\
+    {									\
+	table_##table_name old_table = table;				\
+	(table).begin = (table_##table_name##_item**) calloc (new_size, sizeof(*(table).begin)); \
+	(table).end = (table).begin + (new_size);			\
+	table_##table_name##_bucket old_bucket;				\
+	table_##table_name##_bucket new_bucket;				\
+	table_##table_name##_item * next;				\
+	for_table (old_bucket, old_table)				\
+	{								\
+	    while(*old_bucket)						\
+	    {								\
+		next = (*old_bucket)->next;				\
+		new_bucket = table_##table_name##_bucket(table, (*old_bucket)->query); \
+		(*old_bucket)->next = *new_bucket;			\
+		*new_bucket = *old_bucket;				\
+		*old_bucket = next;					\
+	    }								\
+	}								\
+	free (old_table.begin);						\
     }
 
-    free (old_table.begin);
-}
-
-inline static void table_autosize (table * table)
-{
-    if (80 * (size_t) range_count (*table) <= 100 * (table)->used)
-    {
-	table_resize (table, (1 + 1.618034) * range_count (*table) + 107);
-    }
-}
-
-static void table_search (table_result * result, table * table, const table_key key)
-{
-    table_autosize (table);
-
-    *(table_key*) &result->key = (table_key) key;
-    result->table = table;
-    table_key_hash (result->digest, key);
-    result->bucket = table->begin + result->digest % range_count (*table);
-
-    table_element * element;
-    
-    for_list (element, *result->bucket)
-    {
-	if (table_key_equals (key, element->child.key))
-	{
-	    result->match = element;
-	    return;
-	}
-    }
-    
-    result->match = NULL;
-}
-
-static void table_add (table_result * result)
-{
-    assert (!result->match);
-    result->match = calloc (1, sizeof (*result->match));
-    table_key_hash(result->match->child.digest, result->key);
-    table_key_copy(result->match->child.key, result->key);
-    list_push (*result->bucket, *result->match);
-}
-
-static void table_remove (table_result * result)
-{
-    assert (result->match);
-    table_element ** parent = result->bucket;
-    while (*parent != result->match)
-    {
-	parent = (table_element**) &(**parent).peer;	
+#define table_delete(table_name, bucket)			\
+    {								\
+	table_##table_name##_item * item = *(bucket);		\
+	*bucket = item->next;					\
+	table_##table_name##_key_free ( item->_key );	\
+	table_##table_name##_value_free ( item->value );	\
+	free (item);						\
     }
 
-    assert (*parent == result->match);
+#define table_clear(table_name, table)			\
+    {							\
+	table_##table_name##_bucket bucket;		\
+	for_table(bucket, table)			\
+	{						\
+	    while (*bucket)				\
+	    {						\
+		table_##table_name##_delete(bucket);	\
+	    }						\
+	}						\
+	free( (table).begin );				\
+	table = (table_##table_name){0};		\
+    }						
 
-    *parent = (**parent).peer;
+// generics
 
-    assert (*parent != result->match);
-}
-
-inline static const table_key table_include (table * table, const table_key key)
-{
-    table_result result;
-    table_search (&result, table, key);
-    if (!result.match)
-    {
-	table_add (&result);
-    }
-    return result.match->child.key;
-}
-
-inline static table_element * table_include_element (table * table, const table_key key)
-{
-    table_result result;
-    table_search (&result, table, key);
-    if (!result.match)
-    {
-	table_add (&result);
-    }
-    return result.match;
-}
-
-inline static void table_exclude (table * table, const table_key key)
-{
-    table_result result;
-    table_search (&result, table, key);
-    if (result.match)
-    {
-	table_remove(&result);
-    }
-}
-
-inline static void table_clear (table * clear_table)
-{
-    table_element * element;
-    table_bucket * bucket;
-    
-    for_range (bucket, *clear_table)
-    {
-	while ( (element = list_pop(*bucket)) )
-	{
-	    table_key_free (element->child.key);
-	    free (element);
-	}
-    }
-
-    free (clear_table->begin);
-
-    *clear_table = (table){0};
-}
+#define table_copy_strdup(table_name,a) _table_copy_strdup(a)
+#define table_copy_value(table_name,a) ( (table_##table_name##_key)(a) )
+#define table_equals_strcmp_0(table_name,query_a,query_b) (0 == strcmp ((const char*)((query_a).key),(const char*)((query_b).key)))
+#define table_equals_value(table_name,query_a,query_b) ( (query_a).key == (query_b).key )
+#define table_free_pointer(table_name,a) free(a)
+#define table_hash_sdbm_string(table_name,a) _table_hash_sdbm_string((const char*)(a))
+#define table_hash_value(table_name,a) ((table_digest)(a))
