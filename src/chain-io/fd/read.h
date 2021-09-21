@@ -21,4 +21,4 @@
 #define STDERR_FILENO 2
 #endif
 
-io_read * io_read_open_fd (int fd);
+chain_read * chain_read_open_fd (int fd);

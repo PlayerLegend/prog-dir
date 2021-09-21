@@ -47,12 +47,10 @@ buffer_typedef(char,char);
 buffer_typedef(unsigned char,unsigned_char, buffer_char char_cast;);
 buffer_typedef(char*,string);
 
-int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_count);
+int _buffer_realloc (buffer_void * expand_buffer, size_t type_size, size_t new_count);
 
 #define buffer_realloc(buffer, count)					\
-    (( (size_t)((buffer).max - (buffer).begin) <= (size_t)(count) )	\
-     ? _buffer_resize ((buffer_void*)&(buffer), sizeof (*(buffer).begin), (count) * 2) \
-     : 0)
+    _buffer_realloc ((buffer_void*)&(buffer), sizeof(*(buffer).begin), count)
 /**<
    @brief If the number of members allocated to the buffer is less than count, this macro reallocs the buffer so that it can contain at least 'count' items. Note that this is not the same as resizing the buffer, as this does not change the distance between the begin and end members, only the begin and max members.
 */
@@ -66,7 +64,7 @@ int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_co
 */
 
 #define buffer_push(buffer)						\
-    ((buffer).end == (buffer).max ? _buffer_resize ( (buffer_void*)&(buffer), sizeof (*(buffer).begin), 10 + ((buffer).max - (buffer).begin) * 3 ), (buffer).end++ : (buffer).end++)
+    ((buffer).end == (buffer).max ? (buffer_realloc (buffer, range_count(buffer) + 1), (buffer).end++) : (buffer).end++)
 /**<
    @brief This macro pushes a new item onto the end of the given buffer. To do this, it will expand the buffer by one item and evaluate to the address of the newly added item. So to push a value onto a buffer, one may either dereference the call to this macro and initialize the new item directly or store the address given by the macro call in a pointer for later assignment.
 */

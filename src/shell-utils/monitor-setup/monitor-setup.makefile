@@ -1,3 +1,7 @@
+SH_PROGRAMS += bin/monitor-setup
+
+shell-utils: bin/monitor-setup
+
 bin/monitor-setup: src/shell-utils/monitor-setup/monitor-setup.sh
 
-UTILS_SH += bin/monitor-setup
+utils: bin/monitor-setup

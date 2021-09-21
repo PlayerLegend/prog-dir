@@ -49,7 +49,7 @@ monitor() {
 	x220 )
 	    primary=DP-2
 	    secondary=LVDS-1
-	    xrandr --output $primary --left-of $secondary --mode 1920x1080 -r 144 --primary
+	    xrandr --output $primary --above $secondary --mode 1920x1080 -r 144 --primary
     esac
 
     xinput map-to-output '1060PRO Pen Pen (0)' $primary

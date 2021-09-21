@@ -6,7 +6,9 @@
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
 #include "../array/buffer.h"
-#include "../io_wrapper/read.h"
+#include "../chain-io/common.h"
+#include "../chain-io/read.h"
+#include "../chain-io/write.h"
 #endif
 
 /** @file dzip.h
@@ -50,11 +52,9 @@ typedef struct dzip_deflate_state dzip_deflate_state; ///< A state used by relat
 keyargs_declare (dzip_deflate_state*, dzip_deflate_state_new);
 #define dzip_deflate_state_new(...) keyargs_call (dzip_deflate_state_new, __VA_ARGS__) ///< Create a new deflate state
 
-keyargs_declare (void, dzip_deflate,
-		 buffer_unsigned_char * output;
-		 const range_const_unsigned_char * input;
-		 dzip_deflate_state * state;);
-#define dzip_deflate(...) keyargs_call (dzip_deflate, __VA_ARGS__)
+void dzip_deflate_chunk (buffer_unsigned_char * output, dzip_deflate_state * state, const range_const_unsigned_char * input);
+
+void dzip_deflate (buffer_unsigned_char * output, dzip_deflate_state * state, const range_const_unsigned_char * input);
 /**<
    @brief Create one or more dzip chunks from input
    @param output The buffer in which to store dzip chunk(s) created from the input.
@@ -67,6 +67,12 @@ void dzip_deflate_state_free(dzip_deflate_state * state);
    @brief Free a deflate state
     @param state The state to free
  */
+
+chain_read * dzip_deflate_chain_input (chain_read * input);
+chain_read * dzip_inflate_chain_input (chain_read * input);
+
+chain_write * dzip_deflate_chain_output (chain_write * input);
+chain_write * dzip_inflate_chain_output (chain_write * input);
 
 //
 //    inflate
@@ -103,5 +109,3 @@ long long int dzip_inflate_range (buffer_unsigned_char * output, range_const_uns
    @param output The output buffer, where decompressed data will be written.
    @param input The input buffer, containing dzip chunks
  */
-
-io_read * io_read_open_dzip (io_read * source);

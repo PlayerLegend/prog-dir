@@ -7,8 +7,8 @@
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"
 #include "../array/buffer.h"
-#include "../io_wrapper/common.h"
-#include "../io_wrapper/read.h"
+#include "../io-wrapper/common.h"
+#include "../io-wrapper/read.h"
 #include "dzip.h"
 #include "../buffer_io/buffer_io.h"
 

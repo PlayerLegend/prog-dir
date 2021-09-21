@@ -6,10 +6,23 @@
 #include "range.h"
 #include "buffer.h"
 
-int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_count)
+int _buffer_realloc (buffer_void * expand_buffer, size_t type_size, size_t new_count)
 {
     size_t new_size = type_size * new_count;
+
+    size_t have_size = (char*)expand_buffer->max - (char*)expand_buffer->begin;
+
+    if (have_size >= new_size)
+    {
+	return 0;
+    }
+
+    new_size = 4 * new_size + 10 * type_size;
+    
+    assert (new_size > 0);
+    
     void * new_region = realloc (expand_buffer->begin, new_size);
+
     if (!new_region)
     {
 	perror ("realloc");
@@ -17,10 +30,14 @@ int _buffer_resize (buffer_void * expand_buffer, size_t type_size, size_t new_co
 	fflush (stderr);
 	return -1;
     }
+
     size_t range_size = range_count (*expand_buffer);
-    *expand_buffer = (buffer_void) { .begin = new_region,
-				     .end = new_region + range_size,
-				     .max = new_region + new_size };
+
+    *expand_buffer = (buffer_void)
+	{ .begin = new_region,
+	  .end = (char*)new_region + range_size,
+	  .max = (char*)new_region + new_size };
+    
     return 0;
 }
 
@@ -28,6 +45,11 @@ void _buffer_downshift (buffer_void * buffer, size_t element_size, size_t count)
 {
     assert (range_count(*buffer) % element_size == 0);
 
+    if (!count)
+    {
+	return;
+    }
+    
     size_t buffer_size = range_count(*buffer);
 
     size_t size = element_size * count;
@@ -38,6 +60,8 @@ void _buffer_downshift (buffer_void * buffer, size_t element_size, size_t count)
 	return;
     }
 
+    assert (buffer_size > size);
+    
     size_t shift_size = buffer_size - size;
 
     assert (shift_size < buffer_size);

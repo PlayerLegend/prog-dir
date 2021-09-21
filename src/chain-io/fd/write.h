@@ -21,4 +21,4 @@
 #define STDERR_FILENO 2
 #endif
 
-io_write * io_write_open_fd (int fd);
+chain_write * chain_write_open_fd (int fd);

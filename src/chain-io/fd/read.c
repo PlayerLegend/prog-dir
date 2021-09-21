@@ -10,29 +10,30 @@
 #include "read.h"
 #include "../../buffer_io/buffer_io.h"
 
-static io_status io_read_fd_update_func (buffer_unsigned_char * buffer, void * arg)
+static chain_status chain_read_fd_update_func (buffer_unsigned_char * buffer, void * arg)
 {
     int fd = (uintptr_t)arg;
     long long int size = buffer_read (.buffer = &buffer->char_cast,
+				      .initial_alloc_size = 1e6,
 				      .fd = fd);
 
     if (size < 0)
     {
-	return IO_ERROR;
+	return CHAIN_ERROR;
     }
 
     if (size == 0)
     {
-	return IO_COMPLETE;
+	return CHAIN_COMPLETE;
     }
 
-    return IO_INCOMPLETE;
+    return CHAIN_INCOMPLETE;
 }
 
-io_read * io_read_open_fd (int fd)
+chain_read * chain_read_open_fd (int fd)
 {
     uintptr_t arg_intptr = fd;
     void * arg = (void*) arg_intptr;
-    return io_read_new(.func = io_read_fd_update_func,
-			       .arg = arg);
+    return chain_read_new(.func = chain_read_fd_update_func,
+			  .arg = arg);
 }
