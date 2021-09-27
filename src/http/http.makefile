@@ -1,17 +1,25 @@
-test/http_get_open: src/http/test/http_get_open.test.o
-test/http_parse_url: src/http/test/http_parse_url.test.o
-test/http-cat: src/http/test/http-cat.test.o
+bin/http-cat: src/http/http-cat.util.o
+bin/http-cat: src/chain-io/read.o
+bin/http-cat: src/chain-io/write.o
+bin/http-cat: src/chain-io/fd/read.o
+bin/http-cat: src/chain-io/fd/write.o
+bin/http-cat: src/http/client.o
+bin/http-cat: src/log/log.o
+bin/http-cat: src/array/buffer.o
+bin/http-cat: src/buffer_io/buffer_io.o
+bin/http-cat: src/array/range_atozd.o
+bin/http-cat: src/array/range_streq_string.o
+bin/http-cat: src/array/range.o
+bin/http-cat: src/network/network.o
+test/run-http-cat: src/http/test/run-http-cat.sh
 
-test/http-cat test/http_parse_url test/http_get_open: src/network/network.o
-test/http-cat test/http_parse_url test/http_get_open: src/http/http.o
-test/http-cat test/http_parse_url test/http_get_open: src/log/log.o
-test/http-cat test/http_parse_url test/http_get_open: src/buffer_io/buffer_io.o
-test/http-cat test/http_parse_url test/http_get_open: src/array/buffer.o
+http-utils: bin/http-cat
+utils: http-utils
 
-test/run-chunked-http-cat: src/http/test/chunked-http-cat.test.sh
-test/run-identity-http-cat: src/http/test/identity-http-cat.test.sh
+http-tests: test/run-http-cat
+tests: http-tests
 
-#TESTS_C += test/http_parse_url test/http_get_open test/http-cat
-#TESTS_SH += test/run-chunked-http-cat test/run-identity-http-cat
+C_PROGRAMS += bin/http-cat
+SH_PROGRAMS += test/run-http-cat
 
-#RUN_TESTS += test/run-chunked-http-cat test/run-identity-http-cat
+RUN_TESTS += test/run-http-cat

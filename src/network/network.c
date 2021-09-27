@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #define FLAT_INCLUDES
 #include "../keyargs/keyargs.h"
 #include "../array/range.h"

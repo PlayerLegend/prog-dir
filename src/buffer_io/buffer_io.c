@@ -64,8 +64,12 @@ keyargs_define(buffer_read)
     {
 	fill_size = max_buffer_size - have_size;
     }
+
+    //log_debug ("read %zu from %d", fill_size, args.fd);
     
     ssize_t read_result = read (args.fd, fill_point, fill_size);
+
+    //log_debug ("result %zd", read_result);
 
     if (read_result < 0)
     {

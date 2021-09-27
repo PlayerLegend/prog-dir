@@ -22,3 +22,7 @@
 #endif
 
 chain_read * chain_read_open_fd (int fd);
+inline static int chain_read_fd (chain_read * chain)
+{
+    return *(int*) chain_read_access_arg(chain);
+}

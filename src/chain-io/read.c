@@ -12,94 +12,136 @@
 #include "../log/log.h"
 
 struct chain_read {
-    chain_read_update_func func;
-    void * arg;
     size_t released;
-    void (*free_arg)(void * arg);
-    buffer_unsigned_char buffer;
+    bool is_error;
+    bool is_complete;
+    bool fresh_read;
+    chain_read_interface interface;
+    unsigned char arg[];
 };
 
-#define MAX_BUFFER_SIZE ((size_t)1e7)
-
-keyargs_define(chain_read_new)
+chain_read * chain_read_new (size_t arg_size)
 {
-    chain_read * chain = calloc (1, sizeof(*chain));
+    return calloc (1, sizeof (chain_read) + arg_size);
+}
 
-    chain->func = args.func;
-    chain->arg = args.arg;
-    chain->free_arg = args.free_arg;
+void * chain_read_access_arg (chain_read * chain)
+{
+    return chain->arg;
+}
 
-    return chain;
+chain_read_interface * chain_read_access_interface (chain_read * chain)
+{
+    return &chain->interface;
 }
 
 static void chain_read_apply_release (chain_read * chain)
 {
-    size_t buffer_size = range_count (chain->buffer);
-
     if (!chain->released)
     {
 	return;
     }
+    
+    size_t buffer_size = range_count (chain->interface.buffer);
 
     if (chain->released >= buffer_size)
     {
-	buffer_rewrite (chain->buffer);
-	chain->released = 0;
+	buffer_rewrite (chain->interface.buffer);
+	chain->released -= buffer_size;
     }
-    else if (chain->released > buffer_size / 2 || buffer_size > MAX_BUFFER_SIZE)
+    else if (chain->released > buffer_size / 2 || buffer_size > 1e7)
     {
-	buffer_downshift (chain->buffer, chain->released);
+	buffer_downshift (chain->interface.buffer, chain->released);
 	chain->released = 0;
     }
 }
 
-chain_status chain_read_update (chain_read * chain)
+bool chain_pull (range_const_unsigned_char * contents, chain_read * chain, size_t target_size)
 {
     chain_read_apply_release (chain);
-    
-    size_t start_size = range_count (chain->buffer);
-    size_t max_size = start_size < MAX_BUFFER_SIZE ? MAX_BUFFER_SIZE : start_size + MAX_BUFFER_SIZE;
 
-    chain_status status = CHAIN_ERROR;
-    
-    while (true)
+    if (chain->is_complete)
     {
-	status = chain->func (&chain->buffer, chain->arg);
-	
-	if (status != CHAIN_INCOMPLETE)
-	{
-	    return status;
-	}
+	return false;
+    }
 
-	if (max_size < (size_t) range_count (chain->buffer))
+    if (chain->fresh_read)
+    {
+	chain->fresh_read = false;
+
+	if (target_size + chain->released <= (size_t)range_count (chain->interface.buffer))
 	{
-	    return CHAIN_INCOMPLETE;
+	    goto incomplete;    
 	}
     }
-}
+    
+    size_t start_size = range_count (chain->interface.buffer);
+    size_t max_size = start_size < target_size ? target_size : start_size + target_size;
 
-void chain_read_contents (range_const_unsigned_char * contents, chain_read * chain)
-{
-    contents->begin = chain->buffer.begin + chain->released;
-    contents->end = chain->buffer.end;
+    chain_status status = CHAIN_ERROR;
+
+    while (true)
+    {
+	status = chain->interface.update (&chain->interface, chain->arg);
+
+	if (status == CHAIN_ERROR)
+	{
+	    goto error;
+	}
+	
+	if (status == CHAIN_COMPLETE)
+	{
+	    goto complete;
+	}
+
+	if (max_size < (size_t) range_count (chain->interface.buffer))
+	{
+	    goto incomplete;
+	}
+    }
+
+complete:
+
+    chain->is_complete = true;
+
+incomplete:
+    
+    contents->begin = chain->interface.buffer.begin + chain->released;
+    contents->end = chain->interface.buffer.end;
 
     if (contents->begin > contents->end)
     {
 	contents->begin = contents->end;
     }
+
+    return true;
+
+error:
+    chain->is_error = true;
+    return false;
 }
 
-void chain_read_release(chain_read * chain, size_t size)
+void chain_release(chain_read * chain, size_t size)
 {
     chain->released += size;
+
+    if (size)
+    {
+	chain->fresh_read = true;
+    }
 }
 
 void chain_read_free (chain_read * chain)
 {
-    free (chain->buffer.begin);
-    if (chain->free_arg)
+    free (chain->interface.buffer.begin);
+    if (chain->interface.cleanup)
     {
-	chain->free_arg (chain->arg);
+	chain->interface.cleanup (chain->arg);
     }
     free (chain);
+}
+
+bool chain_read_is_error (chain_read * chain)
+{
+    return chain->is_error;
 }

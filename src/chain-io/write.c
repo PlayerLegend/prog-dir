@@ -13,53 +13,62 @@
 #include "../log/log.h"
 
 struct chain_write {
-    chain_write_update_func func;
-    void * arg;
     size_t written;
-    void (*free_arg)(void * arg);
     buffer_unsigned_char buffer;
-    size_t flush_size;
+    chain_write_interface interface;
+    bool is_error;
+    unsigned char arg[];
 };
 
 #define BUFFER_MAX_SIZE 1e7
 #define INPUT_FLUSH_SIZE 1e6
 
-keyargs_define(chain_write_new)
+chain_write * chain_write_new(size_t arg_size)
 {
-    chain_write * chain = calloc (1, sizeof(*chain));
+    return calloc (1, sizeof(chain_write) + arg_size);
+}
 
-    chain->func = args.func;
-    chain->arg = args.arg;
-    chain->free_arg = args.free_arg;
-    chain->flush_size = args.flush_size;
+chain_write_interface * chain_write_access_interface (chain_write * chain)
+{
+    return &chain->interface;
+}
 
-    return chain;
+void * chain_write_access_arg (chain_write * chain)
+{
+    return chain->arg;
 }
 
 static bool chain_write_flush_input (chain_write * chain, range_const_unsigned_char * input)
 {
+    if (chain->is_error)
+    {
+	return false;
+    }
+    
     chain_status status = CHAIN_ERROR;
     
     while (true)
     {
-	status = chain->func (input, chain->arg);
+	status = chain->interface.update (&chain->interface, chain->arg, input);
 
-	if (status != CHAIN_INCOMPLETE)
+	if (status == CHAIN_INCOMPLETE)
 	{
-	    if (status == CHAIN_ERROR)
-	    {
-		return false;
-	    }
-	    else
-	    {
-		assert (status == CHAIN_COMPLETE);
-		return true;
-	    }
+	    continue;
+	}
+	else if (status == CHAIN_COMPLETE)
+	{
+	    return true;
+	}
+	else
+	{
+	    assert (status == CHAIN_ERROR);
+	    chain->is_error = true;
+	    return false;
 	}
     }
 }
 
-bool chain_write_update (chain_write * chain, const range_const_unsigned_char * input)
+bool chain_push (chain_write * chain, const range_const_unsigned_char * input)
 {
     if (range_is_empty (*input))
     {
@@ -79,7 +88,7 @@ bool chain_write_update (chain_write * chain, const range_const_unsigned_char * 
 
     assert ((size_t)range_count (chain->buffer) >= chain->written);
     
-    if ((size_t)range_count (chain->buffer) == chain->written && (size_t)range_count (*input) > chain->flush_size)
+    if ((size_t)range_count (chain->buffer) == chain->written && (size_t)range_count (*input) > chain->interface.flush_size)
     {
 	range_const_unsigned_char input_modify = *input;
 	
@@ -97,19 +106,29 @@ bool chain_write_update (chain_write * chain, const range_const_unsigned_char * 
     else
     {
 	buffer_append (chain->buffer, *input);
-	
-	if (range_count(chain->buffer) - chain->written < INPUT_FLUSH_SIZE)
-	{
-	    return true;
-	}
-	else
-	{
-	    return chain_write_flush (chain);
-	}
+
+	return chain_push_final (chain);
     }
 }
 
-bool chain_write_flush(chain_write * chain)
+buffer_unsigned_char * chain_push_start (chain_write * chain)
+{
+    return &chain->buffer;
+}
+
+bool chain_push_final (chain_write * chain)
+{
+    if (range_count(chain->buffer) - chain->written < INPUT_FLUSH_SIZE)
+    {
+	return true;
+    }
+    else
+    {
+	return chain_flush (chain);
+    }
+}
+
+bool chain_flush (chain_write * chain)
 {
     range_const_unsigned_char input =
 	{ .begin = chain->buffer.range_cast.const_cast.begin + chain->written,
@@ -129,11 +148,16 @@ bool chain_write_flush(chain_write * chain)
 
 void chain_write_free (chain_write * chain)
 {
-    chain_write_flush (chain);
+    chain_flush (chain);
     free (chain->buffer.begin);
-    if (chain->free_arg)
+    if (chain->interface.cleanup)
     {
-	chain->free_arg (chain->arg);
+	chain->interface.cleanup (chain->arg);
     }
     free (chain);
+}
+
+bool chain_write_is_error (chain_write * chain)
+{
+    return chain->is_error;
 }

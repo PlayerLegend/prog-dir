@@ -34,7 +34,7 @@ keyargs_declare(long int, buffer_read,
 #define buffer_read(...) keyargs_call(buffer_read, __VA_ARGS__)
 
 keyargs_declare(long int, buffer_write,
-		range_const_char * buffer;
+		const range_const_char * buffer;
 		size_t * wrote_size;
 		int fd;);
 

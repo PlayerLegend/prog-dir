@@ -4,13 +4,18 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #define FLAT_INCLUDES
-#include "../keyargs/keyargs.h"
-#include "../array/range.h"
-#include "../array/buffer.h"
-#include "../io-wrapper/common.h"
-#include "../io-wrapper/read.h"
-#include "dzip.h"
-#include "../buffer_io/buffer_io.h"
+#include "../../keyargs/keyargs.h"
+#include "../../array/range.h"
+#include "../../array/buffer.h"
+#include "../../chain-io/common.h"
+#include "../../chain-io/read.h"
+#include "../../chain-io/write.h"
+#include "../common/common.h"
+#include "inflate.h"
+#include "../../buffer_io/buffer_io.h"
+#include "extensions.h"
+
+#include "../../log/log.h"
 
 bool dzip_inflate_read_chunk (buffer_unsigned_char * chunk, int fd)
 {
@@ -64,7 +69,7 @@ bool dzip_inflate_read_chunk (buffer_unsigned_char * chunk, int fd)
     return true;
 }
 
-long long int dzip_inflate_range (buffer_unsigned_char * output, range_const_unsigned_char * input)
+bool dzip_inflate_range (buffer_unsigned_char * output, range_const_unsigned_char * input)
 {
     union {
 	const dzip_chunk * cast;
@@ -78,26 +83,34 @@ long long int dzip_inflate_range (buffer_unsigned_char * output, range_const_uns
     {
 	if (0 != memcmp (chunk.cast->header.magic, magic, sizeof(magic)))
 	{
-	    return -1;
+	    return false;
 	}
 
 	if (chunk.cast->header.version != DZIP_VERSION)
 	{
-	    return -1;
+	    return false;
+	}
+
+	if (chunk.byte + chunk.cast->header.chunk_size > input->end)
+	{
+	    break;
 	}
 
 	if (!dzip_inflate(.chunk = chunk.cast,
 			  .output = output))
 	{
-	    return -1;
+	    return false;
 	}
 
 	chunk.byte += chunk.cast->header.chunk_size;
     }
 
-    return chunk.byte - input->begin;
+    input->begin = chunk.byte;
+
+    return true;
 }
 
+/*
 typedef struct {
     io_read * source;
     dzip_deflate_state * state;
@@ -148,3 +161,4 @@ io_read * io_read_open_dzip (io_read * source)
 			.arg = arg,
 			.free_arg = io_read_dzip_free_arg);
 }
+*/

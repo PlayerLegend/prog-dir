@@ -4,19 +4,20 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #define FLAT_INCLUDES
-#include "../keyargs/keyargs.h"
-#include "../array/range.h"
-#include "../array/buffer.h"
-#include "../chain-io/common.h"
-#include "../chain-io/read.h"
-#include "../chain-io/write.h"
-#include "dzip.h"
-#include "internal.h"
-#include "../log/log.h"
-#include "../vluint/vluint.h"
-#include "../libc/string.h"
+#include "../../keyargs/keyargs.h"
+#include "../../array/range.h"
+#include "../../array/buffer.h"
+#include "../../chain-io/common.h"
+#include "../../chain-io/read.h"
+#include "../../chain-io/write.h"
+#include "../deflate/deflate.h"
+#include "../common/common.h"
+#include "../common/internal.h"
+#include "../../log/log.h"
+#include "../../vluint/vluint.h"
+#include "../../libc/string.h"
 
-#define DZIP_MAX_CHUNK_SIZE ((size_t)1e6);
+#define DZIP_MAX_CHUNK_SIZE ((size_t)1e6)
 
 //#ifndef NDEBUG
 #define DZIP_RECORD_STATS
@@ -198,16 +199,23 @@ void dzip_deflate_chunk (buffer_unsigned_char * output, dzip_deflate_state * sta
 void dzip_deflate (buffer_unsigned_char * output, dzip_deflate_state * state, const range_const_unsigned_char * input)
 {
     range_const_unsigned_char chunk = *input;
-    
+    size_t rest_size;
+
     while (chunk.begin < input->end)
     {
-	chunk.end = chunk.begin + DZIP_MAX_CHUNK_SIZE;
+	rest_size = input->end - chunk.begin;
 
-	if (chunk.end > input->end)
+	if (rest_size > 2 * DZIP_MAX_CHUNK_SIZE)
+	{
+	    chunk.end = chunk.begin + DZIP_MAX_CHUNK_SIZE;
+	}
+	else
 	{
 	    chunk.end = input->end;
 	}
-	
+
+	assert (chunk.end <= input->end);
+        
 	dzip_deflate_chunk (output, state, &chunk);
 
 	chunk.begin = chunk.end;
@@ -243,87 +251,4 @@ void dzip_print_stats()
     log_stderr ("Average match length = %zu / %zu = %lf", stat_match_length, stat_match_count, (double) stat_match_length / (double) stat_match_count);
     log_stderr ("Average match distance = %zu / %zu = %lf", stat_match_distance, stat_match_count, (double) stat_match_distance / (double) stat_match_count);
 #endif
-}
-
-//    input
-
-typedef struct {
-    chain_read * input;
-    dzip_deflate_state * state;
-}
-    input_arg;
-
-static chain_status input_update_func (buffer_unsigned_char * buffer, void * arg_orig)
-{
-    input_arg * arg = arg_orig;
-
-    chain_status status = chain_read_update (arg->input);
-
-    if (status == CHAIN_ERROR)
-    {
-	return CHAIN_ERROR;
-    }
-
-    range_const_unsigned_char contents = {0};
-
-    chain_read_contents(&contents, arg->input);
-
-    if (status == CHAIN_COMPLETE || range_count (contents) > 1e6)
-    {
-	dzip_deflate (buffer, arg->state, &contents);
-	chain_read_release(arg->input, range_count (contents));
-    }
-
-    return status;
-}
-
-static void input_free_arg (void * arg_orig)
-{
-    input_arg * arg = arg_orig;
-    dzip_deflate_state_free(arg->state);
-    free (arg);
-}
-
-chain_read * dzip_deflate_chain_input (chain_read * input)
-{
-    input_arg * arg = malloc (sizeof(*arg));
-    arg->input = input;
-    arg->state = dzip_deflate_state_new();
-
-    return chain_read_new (.func = input_update_func,
-			   .arg = arg,
-			   .free_arg = input_free_arg);
-}
-
-//    output
-
-typedef struct {
-    chain_write * output;
-    dzip_deflate_state * state;
-}
-    output_arg;
-
-static chain_status output_update_func (range_const_unsigned_char * buffer, void * arg_orig)
-{
-    output_arg * arg = arg_orig;
-
-    if (!chain_write_update(
-}
-
-static void output_free_arg (void * arg_orig)
-{
-    output_arg * arg = arg_orig;
-    dzip_deflate_state_free(arg->state);
-    free (arg);
-}
-
-chain_write * dzip_deflate_chain_output (chain_write * output)
-{
-    output_arg * arg = malloc (sizeof(*arg));
-    arg->output = output;
-    arg->state = dzip_deflate_state_new();
-
-    return chain_write_new (.func = output_update_func,
-			   .arg = arg,
-			   .free_arg = output_free_arg);
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #define FLAT_INCLUDES
 #include "range.h"
 #include "buffer.h"

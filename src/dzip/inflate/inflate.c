@@ -3,16 +3,18 @@
 #include <stdbool.h>
 #include <assert.h>
 #define FLAT_INCLUDES
-#include "../keyargs/keyargs.h"
-#include "../array/range.h"
-#include "../array/buffer.h"
-#include "../io-wrapper/common.h"
-#include "../io-wrapper/read.h"
-#include "dzip.h"
-#include "internal.h"
-#include "../log/log.h"
-#include "../vluint/vluint.h"
-#include "../libc/string.h"
+#include "../../keyargs/keyargs.h"
+#include "../../array/range.h"
+#include "../../array/buffer.h"
+#include "../../chain-io/common.h"
+#include "../../chain-io/read.h"
+#include "../../chain-io/write.h"
+#include "../common/common.h"
+#include "inflate.h"
+#include "../common/internal.h"
+#include "../../log/log.h"
+#include "../../vluint/vluint.h"
+#include "../../libc/string.h"
 
 keyargs_define(dzip_inflate)
 {
