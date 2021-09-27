@@ -18,6 +18,8 @@
 
 #define fatal(mesg,...) { log_error(mesg,#__VA_ARGS__); goto fail; }
 
+#define BASE16_LITTLE_ENDIAN false
+
 // base16
 
 bool metabase_decode_base16 (buffer_unsigned_char * output, const range_const_char * input)
@@ -29,7 +31,7 @@ bool metabase_decode_base16 (buffer_unsigned_char * output, const range_const_ch
     
     range_const_char decode = { .begin = input->begin + 1, .end = input->end };
 
-    return base16_decode (output, &decode);
+    return base16_decode (output, &decode, BASE16_LITTLE_ENDIAN);
     
 fail:
     return false;
@@ -38,7 +40,7 @@ fail:
 void metabase_encode_base16(buffer_char * output, const range_const_unsigned_char * input)
 {
     *buffer_push(*output) = METABASE_BASE16;
-    base16_encode(output,input);
+    base16_encode(output,input, BASE16_LITTLE_ENDIAN);
 }
 
 // mbti

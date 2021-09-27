@@ -11,7 +11,7 @@
 
 #include "../log/log.h"
 
-void base16_encode(buffer_char * output, const range_const_unsigned_char * input)
+void base16_encode(buffer_char * output, const range_const_unsigned_char * input, bool little_endian)
 {
     const unsigned char * c;
     char result[2];
@@ -34,12 +34,12 @@ void base16_encode(buffer_char * output, const range_const_unsigned_char * input
 	    }
 	}
 	
-	*buffer_push(*output) = result[1];
-	*buffer_push(*output) = result[0];
+	*buffer_push(*output) = result[!little_endian];
+	*buffer_push(*output) = result[little_endian];
     }
 }
 
-bool base16_decode (buffer_unsigned_char * output, const range_const_char * input)
+bool base16_decode (buffer_unsigned_char * output, const range_const_char * input, bool little_endian)
 {
     const char * c;
     int i;
@@ -71,7 +71,7 @@ bool base16_decode (buffer_unsigned_char * output, const range_const_char * inpu
 	    assert (inchar_result[i] <= 16);
 	}
 
-	*buffer_push(*output) = inchar_result[1] + inchar_result[0] * 16;
+	*buffer_push(*output) = inchar_result[!little_endian] + inchar_result[little_endian] * 16;
     }
     
     return true;

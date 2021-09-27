@@ -4,18 +4,23 @@
 #define FLAT_INCLUDES
 #endif
 
-typedef unsigned long long usec;
+/** @file benchmark/benchmark.h
 
-struct timeval start;
+    This file provides functions for benchmarking the execution time of a program section.
+*/
 
-static void benchmark_start()
+typedef unsigned long long usec; ///< An integer for storing microseconds
+
+struct timeval start; ///< The start time of the current test
+
+inline static void benchmark_start() /// Begins a test
 {
     gettimeofday (&start, NULL); 
 }
 
-static usec benchmark_delta()
+inline static usec benchmark_delta() /// Finishes a test and returns the microseconds elapsed since its beginning
 {
     struct timeval t;
     gettimeofday (&t, NULL);
     return 1e6 * (t.tv_sec - start.tv_sec) + (t.tv_usec - start.tv_usec);
-}
+} 

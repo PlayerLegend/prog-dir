@@ -12,6 +12,9 @@
    @file tar/read.h
    Describes the public interface for the reading portion of the tar library.
    In order to read through a tar with this library, first allocate and zero a tar_state structure. Then feed it tar sectors using tar_update_fd or tar_update_mem according to your needs. The metadata pertaining to the current file/directory/link/etc can be directly read from the tar_state after it has been updated. If the tar is being read from a stream, the contents of a file must be read before the tar state is updated again. To do this, use either tar_read_region or tar_skip_file.
+
+   \todo Add chain-io functionality to the tar library
+   \todo Consider adding a mainpage to the tar library
 */
 
 typedef struct tar_state tar_state;

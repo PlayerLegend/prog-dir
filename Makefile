@@ -323,8 +323,6 @@ src/chain-io/fd/write.o: src/chain-io/write.h src/chain-io/fd/write.h
 src/chain-io/fd/write.o: src/buffer_io/buffer_io.h
 src/chain-io/write.o: src/array/range.h src/array/buffer.h
 src/chain-io/write.o: src/keyargs/keyargs.h src/chain-io/common.h
-src/chain-io/common.o: src/array/range.h src/array/buffer.h
-src/chain-io/common.o: src/chain-io/common.h
 src/chain-io/read.o: src/array/range.h src/array/buffer.h
 src/chain-io/read.o: src/keyargs/keyargs.h src/chain-io/common.h
 src/chain-io/common.o: src/array/range.h src/array/buffer.h
@@ -409,6 +407,7 @@ src/metabase/test/base2.test.o: src/log/log.h
 src/base16/base16.o: src/array/range.h src/array/buffer.h
 src/base16/test/base16.test.o: src/array/range.h src/array/buffer.h
 src/base16/test/base16.test.o: src/base16/base16.h src/log/log.h
+src/base16/test/base16.test.o: src/test/debug.h
 src/base16/base16.o: src/array/range.h src/array/buffer.h src/base16/base16.h
 src/base16/base16.o: src/log/log.h
 src/path/path.o: src/array/string.h src/array/range.h src/array/buffer.h
